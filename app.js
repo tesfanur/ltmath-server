@@ -17,7 +17,7 @@ import typeDefs from "./graphql/schemas";
 import resolvers from "./graphql/resolvers";
 import connectToDB from "./utils/db";
 import context from "./utils/context";
-import morgan from "morgan";
+// import morgan from "morgan";
 // import { validateTokensMiddleware } from "./middleware/validateTokens.js";
 // console.log({ validateTokensMiddleware });
 dotenv.config();
@@ -29,10 +29,10 @@ const corsOpt = {
 };
 
 //define how to write log messages into a file
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, "access.log"),
-  { flags: "a" }
-);
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__dirname, "access.log"),
+//   { flags: "a" }
+// );
 
 //TODO: use body-parser middleware so that you can grab user post input
 //TODO: write middlware that allows users to login either with their email or username along with their password
@@ -49,7 +49,7 @@ const app = express();
 //apply middlewares
 app.use(helmet());
 app.use(compression());
-app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(morgan("combined", { stream: accessLogStream }));
 app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
 // To support URL-encoded bodies
