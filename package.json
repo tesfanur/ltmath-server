@@ -33,13 +33,11 @@
     "uuid": "^7.0.2",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-0": "^6.24.1"
+    "babel-preset-stage-0": "^6.24.1",
+    "nodemon": "^2.0.2"
   },
   "engines": {
     "node": "10.x",
     "npm": "6.x"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.2"
   }
 }
