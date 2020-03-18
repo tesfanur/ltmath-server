@@ -1,5 +1,5 @@
 {
-  "name": "ltMath",
+  "name": "ltmath",
   "version": "1.0.0",
   "description": "It lets users(students, teachers) Learn or teach mathematical problems using web support tool",
   "main": "app.js",
