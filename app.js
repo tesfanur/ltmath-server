@@ -12,6 +12,10 @@ import helmet from "helmet";
 import compression from "compression";
 import { ApolloServer } from "apollo-server-express";
 //import local modules
+//https://medium.com/@kimtnguyen/how-to-deploy-es6-node-js-express-back-end-to-heroku-7e6743e8d2ff
+//   "start": "nodemon ./app.js --exec babel-node -e js",
+//refer the following link to deploy es6 nodejs app
+//***https://www.jaygould.co.uk/2017-11-14-cloud-deployment-heroku-node-babel/
 import typeDefs from "./graphql/schemas";
 import resolvers from "./graphql/resolvers";
 import connectToDB from "./utils/db";
