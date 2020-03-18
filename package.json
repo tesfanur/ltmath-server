@@ -4,7 +4,7 @@
   "description": "It lets users(students, teachers) Learn or teach mathematical problems using web support tool",
   "main": "app.js",
   "scripts": {
-    "start": "node ./app.js --exec babel-node -e js",
+    "start": "nodemon ./app.js --exec babel-node -e js",
     "heroku-postbuild": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,16 +30,16 @@
     "lodash": "^4.17.15",
     "mongoose": "^5.9.3",
     "morgan": "^1.9.1",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.2",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1"
   },
   "engines": {
     "node": "10.x",
     "npm": "6.x"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-0": "^6.24.1",
     "nodemon": "^2.0.2"
   }
 }
