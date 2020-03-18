@@ -1,5 +1,5 @@
 {
-  "name": "lttMath",
+  "name": "ltMath",
   "version": "1.0.0",
   "description": "It lets users(students, teachers) Learn or teach mathematical problems using web support tool",
   "main": "app.js",
@@ -30,7 +30,10 @@
     "mongoose": "^5.9.3",
     "morgan": "^1.9.1",
     "uuid": "^7.0.2"
-  } ,
+  },
+  "engines": {
+    "node": "10.x"
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
