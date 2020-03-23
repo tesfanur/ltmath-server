@@ -4,11 +4,7 @@
   "description": "It lets users(students, teachers) Learn or teach mathematical problems using web support tool",
   "main": "app.js",
   "scripts": {
-    "clean": "rm -rf build && mkdir build",
-    "build-babel": "babel -d ./build ./src -s",
-    "build": "npm run clean && npm run build-babel",
-    "start": "npm run build && node ./build/index.js",
-    "heroku-postbuild": "npm run build",
+    "start": "nodemon ./app.js --exec babel-node -e js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
