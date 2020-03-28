@@ -23,6 +23,11 @@ const typeDefs = gql`
     username: String!
     email: String!
     usertype: UserType
+  }
+  """
+  User registration input type
+  """
+  type Token {
     token: String
   }
   """
@@ -84,7 +89,7 @@ const typeDefs = gql`
     """
     singnup by user
     """
-    signup(input: userRegistrationInput): User
+    signup(input: userRegistrationInput): Token
     """
     signin user
     """

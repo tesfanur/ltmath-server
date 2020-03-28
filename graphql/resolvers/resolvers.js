@@ -10,8 +10,8 @@ const SECRET_KEY = process.env.SECRET_KEY;
  * @param {*} secret
  * @param {*} expiresIn
  */
-const createToken = (payload, secret, expiresIn) => {
-  return sign(payload, secret, { expiresIn });
+const generateAuthToken = (payload, secret, expiresIn) => {
+  return "Bearer " + sign(payload, secret, { expiresIn });
 };
 const setTokens = user => {
   // console.log({ userfromSetTokens: user });
@@ -22,14 +22,14 @@ const setTokens = user => {
     username: user.username,
     email: user.email
   };
-  const accessToken = createToken(accessUser, SECRET_KEY, fifteenMins);
+  const accessToken = generateAuthToken(accessUser, SECRET_KEY, fifteenMins);
 
   const refreshUser = {
     username: user.username,
     email: user.email,
     count: user.tokenCount
   };
-  const refreshToken = createToken(refreshUser, SECRET_KEY, sevenDays);
+  const refreshToken = generateAuthToken(refreshUser, SECRET_KEY, sevenDays);
 
   return { accessToken, refreshToken };
 };
@@ -40,12 +40,11 @@ const setTokens = user => {
  * @param {*} input {email,username, password}
  */
 
-const signup = async (_, { input }) => {
+const signup = async (_, { input }, { req, res }) => {
   //destructure user input
   const { username, email, password, usertype } = input;
-  // console.log({ username, email, usertype });
+  console.log({ username, email, usertype });
   //TODO: validate user input
-
   const { error, value } = UserModel.validate({
     username,
     email,
@@ -55,7 +54,7 @@ const signup = async (_, { input }) => {
   // console.log({ error, value });
   // console.log("error-object:=>", error.details[0].message);
   //
-  if (validationError) throw new AuthenticationError(error.details[0].message);
+  if (validationError) throw new UserInputError(error.details[0].message);
 
   //check if user aldready exists in the db
   const currentUser = await UserModel.findOne({ email }).exec();
@@ -67,11 +66,17 @@ const signup = async (_, { input }) => {
       email,
       username
     };
-    const token = createToken(payload, SECRET_KEY, "30d");
-    const userInput = { ...input, token };
+    const token = generateAuthToken(payload, SECRET_KEY, "30d");
+    const userInput = { ...input };
     const user = await new UserModel(userInput).save();
-
-    return user;
+    // req.header("authorization", token);
+    // req.headers.authorization = token;
+    res.cookie("authorization", token, { httpOnly: true, secure: true });
+    res.set("Access-Control-Expose-Headers", "*");
+    res.header("authorization", token);
+    //works for frontend only
+    // localStorage.setItem("authorixation", token);
+    return { token }; //{ ...user };
   } else {
     throw new UserInputError(`User with ${username} username already exists!`);
   }
@@ -109,10 +114,22 @@ const signin = async (_, { input }, { req, res }) => {
     email,
     username
   };
-  const token = createToken(userpayload, SECRET_KEY, "3d");
+  const token = generateAuthToken(userpayload, SECRET_KEY, "3d");
 
   //  the following code would be req.req.headers.authorization = "Bearer " + token; if the input argument were not destructed
-  req.headers.authorization = "Bearer " + token;
+  // req.header("authorization", token);
+  // req.headers.authorization = token;
+  // console.log("  req.headers.authorization =>", req.headers.authorization);
+  res.cookie("authorization", token, {
+    httpOnly: true,
+    secure: true
+  });
+  res.set("Access-Control-Expose-Headers", "*");
+  res.header("authorization", token);
+  // console.log("  res.headers.authorization =>", res.headers.authorization);
+  // localStorage.setItem("authorixation", token);
+
+  // console.log("_authorization", req.headers["authorization"]);
   const response = {
     username,
     usertype,
@@ -127,14 +144,12 @@ const signin = async (_, { input }, { req, res }) => {
   return response;
 };
 
-const getAllUsers = async (_, args, { req, user }, info) => {
+const getAllUsers = async (_, args, { req, res }, info) => {
   //TODO: handle user role management from ctx object
-  const access_token = req.headers;
-  // console.log({ access_token });
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImV2YW5hbWFuZ2F0b0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImV2YW5hbWFuZ2F0byIsImlhdCI6MTU4NDM3MzQzNCwiZXhwIjoxNTg2OTY1NDM0fQ.ZzC6maHugPDz9Dct2TRQU47JUt_ZU7d1O4d2BV8w3jw";
+  const token = req.headers.authorization || req.cookies.authorization || "";
+  console.log({ token });
   const decoded = await UserModel.verifyAccessToken(token);
-  // console.log({ decoded });
+  console.log({ decoded });
   const users = await UserModel.find().exec();
   // console.log({ users });
   if (decoded.usertype === "ADMIN") return users;

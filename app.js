@@ -1,8 +1,8 @@
 //import 3rd party modules
 import cors from "cors";
-import fs from "fs";
-import path from "path";
-import https from "https";
+// import fs from "fs";
+// import path from "path";
+// import https from "https";
 import dotenv from "dotenv";
 import express from "express";
 import bodyParser from "body-parser";
@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import compression from "compression";
 import { ApolloServer } from "apollo-server-express";
+// import { ApolloServer } from "apollo-server";
 //import local modules
 //https://medium.com/@kimtnguyen/how-to-deploy-es6-node-js-express-back-end-to-heroku-7e6743e8d2ff
 //   "start": "nodemon ./app.js --exec babel-node -e js",
@@ -20,6 +21,8 @@ import typeDefs from "./graphql/schemas";
 import resolvers from "./graphql/resolvers";
 import connectToDB from "./utils/db";
 import context from "./utils/context";
+import UserModel from "./models/UserModel";
+global.contextCallCounter = 0;
 // import morgan from "morgan";
 // import { validateTokensMiddleware } from "./middleware/validateTokens.js";
 // console.log({ validateTokensMiddleware });
@@ -27,7 +30,7 @@ dotenv.config();
 const { SECRET_KEY } = process.env;
 const PORT = process.env.PORT;
 const corsOpt = {
-  origin: "localhost:5000/",
+  origin: "localhost:5000/graphql",
   credentials: true
 };
 
@@ -41,12 +44,12 @@ const corsOpt = {
 //TODO: write middlware that allows users to login either with their email or username along with their password
 //TODO: download robo 3t for mongodb gui application for your database management
 connectToDB();
-//intialize apollo server
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context
-});
+// //intialize apollo server
+// const server = new ApolloServer({
+//   typeDefs,
+//   resolvers,
+//   context
+// });
 //instantiate express server app
 const app = express();
 //apply middlewares
@@ -72,6 +75,12 @@ app.use(
 // app.use(validateTokensMiddleware);
 // disable the x-powered-by header so we don't leak our architecture
 app.disable("X-Powered-By");
+//intialize apollo server
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ req, res }) => ({ req, res })
+});
 
 server.applyMiddleware({ app });
 
@@ -81,3 +90,7 @@ app.listen(PORT, error => {
     `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
   );
 });
+
+// server.listen().then(({ url }) => {
+//   console.log(`🚀 Server ready at http://localhost:${url}`);
+// });

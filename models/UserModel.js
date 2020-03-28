@@ -26,18 +26,16 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
       unique: true,
+      lowercase: true,
       required: true,
       minlength: 5,
       maxlength: 50
-    },
-    token: {
-      type: String
     },
     password: {
       type: String,
       required: true,
       minlength: 5,
-      maxlength: 200
+      maxlength: 400
     }
   },
   { timestamps: true }
@@ -118,13 +116,17 @@ UserSchema.methods.generateAccessToken = async function() {
  * decode user access token
  */
 UserSchema.statics.verifyAccessToken = async function(token) {
+  // const user = this;
+  // console.log({ tokenFromVerifyAccessToken: token });
+  if (!token) return new AuthenticationError("Token Authorization failed!");
+  token = token.replace("Bearer ", "");
+  let decodedUserInfo = await verify(token, SECRET_KEY);
+  // console.log({ userschema: this }, { decodedUserInfo });
   try {
-    const user = this;
     //TODO modify the code below for token verification
-    let decodedUserInfo = await verify(token, SECRET_KEY);
     if (decodedUserInfo) {
       const { email, username } = decodedUserInfo;
-      const currentUser = await user.findOne({ username }).exec();
+      const currentUser = await this.findOne({ username }).exec();
       if (!currentUser)
         throw new AuthenticationError("Token Authorization failed!");
       const { usertype } = currentUser;
