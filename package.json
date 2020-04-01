@@ -13,6 +13,9 @@
   "dependencies": {
     "apollo-server": "^2.11.0",
     "apollo-server-express": "^2.11.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
@@ -29,11 +32,8 @@
     "lodash": "^4.17.15",
     "mongoose": "^5.9.3",
     "morgan": "^1.9.1",
-    "uuid": "^7.0.2",
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-0": "^6.24.1",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.2",
+    "uuid": "^7.0.2"
   },
   "engines": {
     "node": "10.x",

@@ -30,7 +30,7 @@ dotenv.config();
 const { SECRET_KEY } = process.env;
 const PORT = process.env.PORT;
 const corsOpt = {
-  origin: "localhost:5000/graphql",
+  origin: "*", //http://localhost:5000/graphql
   credentials: true
 };
 
@@ -76,18 +76,18 @@ app.use(
 // disable the x-powered-by header so we don't leak our architecture
 app.disable("X-Powered-By");
 //intialize apollo server
-const server = new ApolloServer({
+const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res })
 });
 
-server.applyMiddleware({ app });
+apolloServer.applyMiddleware({ app, path: "/", cors: false }); //disables the a-s-e cors to allow the cors middleware
 
 app.listen(PORT, error => {
   if (error) Error(error);
   console.log(
-    `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
+    `🚀 apolloServer ready at http://localhost:${PORT}${apolloServer.graphqlPath}`
   );
 });
 

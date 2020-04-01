@@ -44,7 +44,6 @@ const typeDefs = gql`
   """
   input userSigninInput {
     username: String
-    email: String
     password: String
   }
   """
@@ -93,7 +92,7 @@ const typeDefs = gql`
     """
     signin user
     """
-    signin(input: userSigninInput): signinResponse!
+    signin(input: userSigninInput): Token
   }
 `;
 

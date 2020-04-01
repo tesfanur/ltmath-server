@@ -72,7 +72,7 @@ UserSchema.pre("save", async function hashPassword(next) {
     if (!user.isModified("password")) return next();
     // generate a salt fpr hashing
     const SALT_ROUND = await genSalt(12);
-    console.log({ SALT_ROUND });
+    // console.log({ SALT_ROUND });
     // hash the password along with our new salt
     const hashedPassword = await hash(user.password, SALT_ROUND);
     // override the plain text password with the hashed one

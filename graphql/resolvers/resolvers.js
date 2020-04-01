@@ -94,13 +94,12 @@ const signup = async (_, { input }, { req, res }) => {
  */
 
 const signin = async (_, { input }, { req, res }) => {
-  const { email, username, password } = input;
+  const { username, password } = input;
   // console.log({ headers: req.req.headers });
   //TODO: validate user signin input
   // const validationResult = UserModel.validate(input);
   // console.log(validationResult);
   const userExtractedFromDB = await UserModel.findOne({
-    email,
     username
   }).exec();
   // console.log("userExtractedFromDB =>", userExtractedFromDB);
@@ -109,7 +108,7 @@ const signin = async (_, { input }, { req, res }) => {
   //compare password using user method
   userExtractedFromDB.checkPasswordValidity(password);
 
-  let { usertype } = userExtractedFromDB;
+  let { usertype, email } = userExtractedFromDB;
   const userpayload = {
     email,
     username
@@ -171,6 +170,8 @@ const getUserByUsername = async (_, { username }) => {
 };
 const getUserByID = async (_, { _id }) => {
   const user = await UserModel.findOne({ _id }).exec();
+  console.log({ user });
+  if (!user) return {};
   // console.log({ userObtainedBygetUserByID: user });
   //TODO: handle if user not found
   // console.log({ ...user.doc });
