@@ -1,9 +1,12 @@
-import UserModel from "./../../models/UserModel";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
 import { sign } from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from "apollo-server";
-import dotenv from "dotenv";
+
+import UserModel from "../../models/UserModel";
 dotenv.config();
 const SECRET_KEY = process.env.SECRET_KEY;
+const isValidObjectId = _id => mongoose.Types.ObjectId.isValid(_id);
 /**
  *
  * @param {*} payload
@@ -86,9 +89,7 @@ const signup = async (_, { input }, { req, res }) => {
  * @param {*} _
  * @param {*} input  {email,username, password}
  * @param {*} {user}  {email, username, iat, expIn}
- * @return {
-      username,
-      email,      
+ * @return {       
       token
     };
  */
@@ -99,48 +100,29 @@ const signin = async (_, { input }, { req, res }) => {
   //TODO: validate user signin input
   // const validationResult = UserModel.validate(input);
   // console.log(validationResult);
-  const userExtractedFromDB = await UserModel.findOne({
+  const extractedUser = await UserModel.findOne({
     username
-  }).exec();
-  // console.log("userExtractedFromDB =>", userExtractedFromDB);
-  if (!userExtractedFromDB)
-    throw new UserInputError("Invalid username or password");
+  }).select("-password");
+  // console.log("extractedUser =>", extractedUser);
+  if (!extractedUser) throw new UserInputError("Invalid username or password");
   //compare password using user method
-  userExtractedFromDB.checkPasswordValidity(password);
+  extractedUser.checkPasswordValidity(password);
 
-  let { usertype, email } = userExtractedFromDB;
+  let { usertype, email } = extractedUser;
   const userpayload = {
     email,
-    username
+    username,
+    usertype
   };
   const token = generateAuthToken(userpayload, SECRET_KEY, "3d");
-
-  //  the following code would be req.req.headers.authorization = "Bearer " + token; if the input argument were not destructed
-  // req.header("authorization", token);
-  // req.headers.authorization = token;
-  // console.log("  req.headers.authorization =>", req.headers.authorization);
   res.cookie("authorization", token, {
     httpOnly: true,
     secure: true
   });
   res.set("Access-Control-Expose-Headers", "*");
   res.header("authorization", token);
-  // console.log("  res.headers.authorization =>", res.headers.authorization);
-  // localStorage.setItem("authorixation", token);
 
-  // console.log("_authorization", req.headers["authorization"]);
-  const response = {
-    username,
-    usertype,
-    email,
-    token
-  };
-
-  // console.log(
-  //   `setTokens({ username, email }) =>`,
-  //   setTokens({ username, email })
-  // );
-  return response;
+  return { token };
 };
 
 const getAllUsers = async (_, args, { req, res }, info) => {
@@ -157,28 +139,26 @@ const getAllUsers = async (_, args, { req, res }, info) => {
 };
 
 const getUserByEmail = async (_, { email }) => {
-  const user = await UserModel.findOne({ email }).exec();
+  const user = await UserModel.findOne({ email }).select("-password");
+  if (!user) throw new Error("No user found");
   //TODO: handle if user not found
-  // console.log({ user });
+  console.log({ user });
   return user;
 };
 const getUserByUsername = async (_, { username }) => {
-  const user = await UserModel.findOne({ username }).exec();
-  //TODO: handle if user not found
-  // console.log({ ...user.doc });
+  const user = await UserModel.findOne({ username }).select("-password");
+  if (!user) throw new Error("No user found");
   return user;
 };
 const getUserByID = async (_, { _id }) => {
-  const user = await UserModel.findOne({ _id }).exec();
-  console.log({ user });
-  if (!user) return {};
-  // console.log({ userObtainedBygetUserByID: user });
-  //TODO: handle if user not found
-  // console.log({ ...user.doc });
+  if (!isValidObjectId(_id)) throw new Error(`${_id} is Invalid user id`);
+  const user = await UserModel.findOne({ _id }).select("-password");
+  if (!user) throw new Error("No user found");
+  // console.log({ user });
   return user;
 };
 
-const resolvers = {
+const userResolvers = {
   Mutation: {
     signup,
     signin
@@ -194,4 +174,4 @@ const resolvers = {
   }
 };
 
-module.exports = resolvers;
+export { userResolvers };

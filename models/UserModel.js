@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 import { hash, genSalt, compare } from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
 import Joi from "joi";
@@ -7,7 +7,7 @@ dotenv.config();
 const { SECRET_KEY } = process.env;
 import { AuthenticationError } from "apollo-server";
 
-const UserSchema = new mongoose.Schema(
+const UserSchema = new Schema(
   {
     username: {
       type: String,
@@ -137,6 +137,6 @@ UserSchema.statics.verifyAccessToken = async function(token) {
     throw new AuthenticationError("Authentication failed!");
   }
 };
-const UserModel = mongoose.model("User", UserSchema);
+const UserModel = model("User", UserSchema);
 //==============================
 export default UserModel;
