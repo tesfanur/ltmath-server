@@ -38,11 +38,10 @@ const questionTypedefs = gql`
   List of all multiple Choices
   """
   type Choice {
-    choiceA: String
-    choiceB: String
-    choiceC: String
-    choiceD: String
-    choiceE: String
+    description: String
+  }
+  input ChoiceInput {
+    description: String
   }
   """
   Question type def
@@ -54,7 +53,7 @@ const questionTypedefs = gql`
     topic: String! #Should be taken from selection option from user
     subtopic: String! #Should also be taken from selection option from user
     complexityLevel: complexityLevel!
-    multipleChoice: Choice
+    multipleChoice: [Choice]
     imageUrl: String
     answer: String
     explanation: String
@@ -66,7 +65,7 @@ const questionTypedefs = gql`
     topic: String! #Should be taken from selection option from user
     subtopic: String! #Should also be taken from selection option from user
     complexityLevel: complexityLevel!
-    multipleChoice: ID
+    multipleChoice: [ChoiceInput!]!
     imageUrl: String
     answer: String
     explanation: String
@@ -97,11 +96,11 @@ const questionTypedefs = gql`
     """
     returns all available questions by question subtopic
     """
-    getAllQuestionsBySubTopic: [Question!]!
+    getAllQuestionsBySubTopic(subtopic: String): [Question!]!
     """
     returns all available question by complexity Level
     """
-    getAllQuestionsComplexityLevel: [Question!]!
+    getAllQuestionsComplexityLevel(complexityLevel: String): [Question!]!
     """
     get random question
     """
@@ -138,27 +137,27 @@ const questionTypedefs = gql`
     """
     add topic
     """
-    addTopic(input: TopicInput): Topic
+    addTopic(description: String): Topic
     """
     edit topic
     """
-    editTopic(input: TopicInput): Topic
+    editTopic(description: String): Topic
     """
     delete topic
     """
-    deleteTopic(input: TopicInput): Topic
+    deleteTopic(description: String): Topic
     """
     add sub topic
     """
-    addSubTopic(input: SubTopicInput): SubTopic
+    addSubTopic(description: String): SubTopic
     """
     edit sub topic
     """
-    editSubTopic(input: SubTopicInput): SubTopic
+    editSubTopic(description: String): SubTopic
     """
     delete sub topic
     """
-    deleteSubTopic(input: SubTopicInput): SubTopic
+    deleteSubTopic(description: String): SubTopic
   }
 `;
 

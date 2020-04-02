@@ -11,6 +11,7 @@ const QuestionSchema = new Schema(
     topic: { type: String, required: true },
     subtopic: { type: String, required: true },
     complexityLevel: {
+      type: String,
       enum: ["EASY", "MEDIUM", "HARD"],
       default: "MEDIUM"
     },

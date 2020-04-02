@@ -1,4 +1,4 @@
 import { userTypedefs } from "./user";
 import { questionTypedefs } from "./question";
-const schemaArray = [userTypedefs, questionTypedefs];
-export default schemaArray;
+const typeDefsArray = [userTypedefs, questionTypedefs];
+export default typeDefsArray;

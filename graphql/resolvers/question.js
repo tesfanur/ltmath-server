@@ -1,9 +1,8 @@
-import { AuthenticationError, UserInputError } from "apollo-server";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import UserModel from "./../../models/UserModel";
-dotenv.config();
-const SECRET_KEY = process.env.SECRET_KEY;
+import QuestionModel from "./../../models/QuestionModel";
+import TopicModel from "../../models/TopicModel";
+import SubTopicModel from "../../models/SubTopicModel";
 const isValidObjectId = _id => mongoose.Types.ObjectId.isValid(_id);
 /**
  * Question Mutation Resolvers
@@ -25,9 +24,31 @@ const isValidObjectId = _id => mongoose.Types.ObjectId.isValid(_id);
 
 const addQuestion = async (_, { input }, { req, res }) => {
   //destructure user input
-  const { username, email, password, usertype } = input;
+  const {
+    questionNumber,
+    description,
+    topic,
+    subtopic,
+    complexityLevel,
+    multipleChoice,
+    imageUrl,
+    answer,
+    explanation
+  } = input;
 
-  return null;
+  const newQuestion = new QuestionModel({
+    questionNumber,
+    description,
+    topic,
+    subtopic,
+    complexityLevel,
+    multipleChoice,
+    imageUrl,
+    answer,
+    explanation
+  });
+  await newQuestion.save();
+  return newQuestion;
 };
 const editQuestion = async (_, { input }, { req, res }) => {
   //destructure user input
@@ -37,35 +58,64 @@ const editQuestion = async (_, { input }, { req, res }) => {
 };
 /**
  *
- * @param {*} _
- * @param {*} input  {email,username, password}
- * @param {*} {user}  {email, username, iat, expIn}
- * @return {
-     
-    };
+ * @param {*} _id
+ * @param {*} param1
+ * @param {*} param2
  */
+const deleteQuestion = async (_, { _id }, { req, res }) => {
+  return {};
+};
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ */
+const addTopic = async (_, { description }) => {
+  if (!description) throw Error("User input error");
+  const existingTopic = await TopicModel.findOne({
+    description: description.trim()
+  });
+  console.log({ existingTopic });
+  if (existingTopic) throw Error("This sub topic already exists");
+  const topic = new TopicModel({ description });
+  await topic.save();
+  return topic;
+};
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ */
+const addSubTopic = async (_, { description }) => {
+  //TODO: since only admin user has the right to add sub topics and other writing access
+  //check the user role or user type before executing the code below to the database
+  if (!description) throw Error("User input error");
+  const existingSubtopic = await SubTopicModel.findOne({
+    description: description.trim()
+  });
+  console.log({ existingSubtopic });
+  if (existingSubtopic) throw Error("This sub topic already exists");
+  const subTopic = new SubTopicModel({ description });
+  await subTopic.save();
+  return subTopic;
+};
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ */
+const editTopic = async (_, { description }) => {
+  console.log({ description });
+  return {};
+};
 
-const deleteQuestion = async (_, { input }, { req, res }) => {
+const deleteTopic = async (_, { _id }, { req, res }) => {
   return {};
 };
-const addTopic = async (_, { input }, { req, res }) => {
+const editSubTopic = async (_, { _id }, { req, res }) => {
   return {};
 };
-
-const addSubTopic = async (_, { input }, { req, res }) => {
-  return {};
-};
-const editTopic = async (_, { input }, { req, res }) => {
-  return {};
-};
-
-const deleteTopic = async (_, { input }, { req, res }) => {
-  return {};
-};
-const editSubTopic = async (_, { input }, { req, res }) => {
-  return {};
-};
-const deleteSubTopic = async (_, { input }, { req, res }) => {
+const deleteSubTopic = async (_, { _id }, { req, res }) => {
   return {};
 };
 
@@ -97,43 +147,63 @@ getAllSubTopics: [SubTopic!]!
     getAllTopics,
     getAllSubTopics
  */
-const getQuestionById = async (_, args, { req, res }, info) => {
-  return user;
+const getQuestionById = async (_, { _id }, { req, res }) => {
+  if (!isValidObjectId(_id)) throw Error("Invalide question id");
+  const question = await QuestionModel.findById(_id);
+  return question;
 };
-const getAllQuestions = async (_, args, { req, res }, info) => {
-  return user;
+const getAllQuestions = async (_, args, { req, res }) => {
+  const questions = await QuestionModel.find();
+  if (!questions) throw Error("No question found");
+  return questions;
 };
-const getAllQuestionsByTopic = async (_, args, { req, res }, info) => {
-  return user;
+const getAllQuestionsByTopic = async (_, { topic }, { req, res }) => {
+  if (!topic) throw Error("User input error");
+  const questions = await QuestionModel.find({ topic });
+  if (!questions) throw Error("No question found");
+  return questions;
 };
-const getAllQuestionsBySubTopic = async (_, args, { req, res }, info) => {
-  return user;
+const getAllQuestionsBySubTopic = async (_, { subtopic }, { req, res }) => {
+  if (!subtopic) throw Error("User input error");
+  const questions = await QuestionModel.find({ subtopic });
+  if (!questions) throw Error("No question found");
+  return questions;
 };
-const getAllQuestionsComplexityLevel = async (_, args, { req, res }, info) => {
-  return user;
+const getAllQuestionsComplexityLevel = async (_, { complexityLevel }) => {
+  if (!complexityLevel) throw Error("User input error");
+  const questions = await QuestionModel.find({ complexityLevel });
+  if (!questions) throw Error("No question found");
+  return questions;
 };
-const getRondomQuestion = async (_, { username }) => {
-  const user = await UserModel.findOne({ username }).select("-password");
+const getRondomQuestion = async (_, args) => {
+  const questions = await QuestionModel.find();
+  if (!questions) throw Error("No question found");
+  const length = questions.length;
+  if (length > 1) return questions[Math.floor(Math.random() * length)];
+  throw Error("No question found");
+};
+const getRondomQuestions = async (_, args) => {
+  //TODO: limit the number of questions to be returned
+  const questions = await QuestionModel.find();
 
-  return user;
+  if (!questions) throw Error("No question found");
+  const length = questions.length;
+  if (length <= 1) return questions;
+  const numberOfRandomQuestions = Math.floor(Math.random() * length);
+  console.log({ numberOfRandomQuestions });
+  let tempRandomQuestionArray = [];
+  for (let i = 0; i < numberOfRandomQuestions; i++) {
+    tempRandomQuestionArray.push(questions[i]);
+  }
+  return tempRandomQuestionArray;
 };
-const getRondomQuestions = async (_, { _id }) => {
-  if (!isValidObjectId(_id)) throw new Error(`${_id} is Invalid user id`);
-  const user = await UserModel.findOne({ _id }).select("-password");
-  if (!user) throw new Error("No user found");
-  console.log({ user });
-  // console.log({ ...user.doc });
-  return user;
+const getAllTopics = async (_, args) => {
+  const topics = await TopicModel.find();
+  return topics;
 };
-const getAllTopics = async (_, { username }) => {
-  const user = await UserModel.findOne({ username }).select("-password");
-
-  return user;
-};
-const getAllSubTopics = async (_, { username }) => {
-  const user = await UserModel.findOne({ username }).select("-password");
-
-  return user;
+const getAllSubTopics = async (_, args) => {
+  const subTopics = await SubTopicModel.find();
+  return subTopics;
 };
 
 const questionResolvers = {

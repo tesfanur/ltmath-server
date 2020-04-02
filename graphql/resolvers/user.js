@@ -46,7 +46,11 @@ const setTokens = user => {
 const signup = async (_, { input }, { req, res }) => {
   //destructure user input
   const { username, email, password, usertype } = input;
-  console.log({ username, email, usertype });
+  console.log({
+    username,
+    email,
+    usertype
+  });
   //TODO: validate user input
   const { error, value } = UserModel.validate({
     username,
@@ -59,30 +63,32 @@ const signup = async (_, { input }, { req, res }) => {
   //
   if (validationError) throw new UserInputError(error.details[0].message);
 
-  //check if user aldready exists in the db
-  const currentUser = await UserModel.findOne({ email }).exec();
-  // console.log({ currentUser });
+  //check if user aldready exists in the db by this email or username
+  const existingUserByEmail = await UserModel.findOne({ email });
+  const existingUserByUsername = await UserModel.findOne({ username });
   //if user doesn't exist register it
-  if (!currentUser) {
+  if (!existingUserByEmail && !existingUserByUsername) {
     //use id for signing with jwt since username or email may be changed by a user
     const payload = {
       email,
       username
     };
-    const token = generateAuthToken(payload, SECRET_KEY, "30d");
-    const userInput = { ...input };
+    const token = generateAuthToken(payload, SECRET_KEY, "7d");
+    const userInput = {
+      ...input
+    };
     const user = await new UserModel(userInput).save();
     // req.header("authorization", token);
     // req.headers.authorization = token;
-    res.cookie("authorization", token, { httpOnly: true, secure: true });
+    res.cookie("authorization", token, {
+      httpOnly: true,
+      secure: true
+    });
     res.set("Access-Control-Expose-Headers", "*");
     res.header("authorization", token);
-    //works for frontend only
-    // localStorage.setItem("authorixation", token);
-    return { token }; //{ ...user };
-  } else {
-    throw new UserInputError(`User with ${username} username already exists!`);
+    return { token };
   }
+  throw new UserInputError(`User with ${username} username already exists!`);
 };
 /**
  *
@@ -114,7 +120,7 @@ const signin = async (_, { input }, { req, res }) => {
     username,
     usertype
   };
-  const token = generateAuthToken(userpayload, SECRET_KEY, "3d");
+  const token = generateAuthToken(userpayload, SECRET_KEY, "7d");
   res.cookie("authorization", token, {
     httpOnly: true,
     secure: true
@@ -164,9 +170,6 @@ const userResolvers = {
     signin
   },
   Query: {
-    authenticationError: (parent, args, context) => {
-      throw new AuthenticationError("must authenticate");
-    },
     users: getAllUsers,
     getUserByEmail,
     getUserByUsername,
