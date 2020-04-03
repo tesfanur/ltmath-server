@@ -108,7 +108,6 @@ const editTopic = async (_, { description }) => {
   console.log({ description });
   return {};
 };
-
 const deleteTopic = async (_, { _id }, { req, res }) => {
   return {};
 };
@@ -118,7 +117,6 @@ const editSubTopic = async (_, { _id }, { req, res }) => {
 const deleteSubTopic = async (_, { _id }, { req, res }) => {
   return {};
 };
-
 /**
  *Question Graphql Queries
 getQuestionById(_id: ID!): Question!

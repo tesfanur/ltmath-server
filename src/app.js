@@ -1,4 +1,6 @@
 //import 3rd party modules
+import regeneratorRuntime from "regenerator-runtime";
+require("regenerator-runtime/path").path;
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";

@@ -66,17 +66,17 @@ UserSchema.statics.validate = function validateSchema(User) {
  */
 UserSchema.pre("save", async function hashPassword(next) {
   try {
-    let user = this;
+    // let user = this;
     // console.log({ userFromPreSaveMiddleware: user });
     // only hash the password if it has been modified (or is new)
-    if (!user.isModified("password")) return next();
+    if (!this.isModified("password")) return next();
     // generate a salt fpr hashing
     const SALT_ROUND = await genSalt(12);
     // console.log({ SALT_ROUND });
     // hash the password along with our new salt
-    const hashedPassword = await hash(user.password, SALT_ROUND);
+    const hashedPassword = await hash(this.password, SALT_ROUND);
     // override the plain text password with the hashed one
-    user.password = hashedPassword;
+    this.password = hashedPassword;
     next();
   } catch (error) {
     next(error);
