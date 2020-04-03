@@ -4,9 +4,9 @@
   "description": "It lets users(students, teachers) Learn or teach mathematical problems using web support tool",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon ./src/app.js --exec babel-node -e js",
+    "start-dev": "nodemon ./src/app.js --exec babel-node -e js",
     "build": "del -rf build && babel src --out-dir dist",
-    "serve": "nodemon dist/app.js",
+    "start": "nodemon dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
