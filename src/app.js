@@ -82,10 +82,12 @@ const apolloServer = new ApolloServer({
 
 apolloServer.applyMiddleware({ app, path: "/", cors: false }); //disables the a-s-e cors to allow the cors middleware
 
-app.listen(PORT, error => {
+app.listen(PORT || process.env.PORT, error => {
   if (error) Error(error);
   console.log(
-    `🚀 apolloServer ready at http://localhost:${PORT}${apolloServer.graphqlPath}`
+    `🚀 apolloServer ready at http://localhost:${PORT || process.env.PORT}${
+      apolloServer.graphqlPath
+    }`
   );
 });
 
