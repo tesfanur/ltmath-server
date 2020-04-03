@@ -133,9 +133,9 @@ var apolloServer = new _apolloServerExpress.ApolloServer({
 
 apolloServer.applyMiddleware({ app: app, path: "/", cors: false }); //disables the a-s-e cors to allow the cors middleware
 
-app.listen(PORT, function (error) {
+app.listen(PORT || process.env.PORT, function (error) {
   if (error) Error(error);
-  console.log("\uD83D\uDE80 apolloServer ready at http://localhost:" + PORT + apolloServer.graphqlPath);
+  console.log("\uD83D\uDE80 apolloServer ready at http://localhost:" + (PORT || process.env.PORT) + apolloServer.graphqlPath);
 });
 
 // server.listen().then(({ url }) => {
