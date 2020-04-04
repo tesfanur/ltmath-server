@@ -66,6 +66,7 @@ app.use(
 app.disable("X-Powered-By");
 //intialize apollo server
 const apolloServer = new ApolloServer({
+  cors: false,
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res }),
