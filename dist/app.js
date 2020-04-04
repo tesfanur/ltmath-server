@@ -77,32 +77,21 @@ var SECRET_KEY = process.env.SECRET_KEY;
 
 var PORT = process.env.PORT;
 var corsOpt = {
-  origin: "*", //http://localhost:5000/graphql
+  origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
   credentials: true
 };
-
-//define how to write log messages into a file
-// const accessLogStream = fs.createWriteStream(
-//   path.join(__dirname, "access.log"),
-//   { flags: "a" }
-// );
 
 //TODO: use body-parser middleware so that you can grab user post input
 //TODO: write middlware that allows users to login either with their email or username along with their password
 //TODO: download robo 3t for mongodb gui application for your database management
 (0, _db2.default)();
-// //intialize apollo server
-// const server = new ApolloServer({
-//   typeDefs,
-//   resolvers,
-//   context
-// });
 //instantiate express server app
 var app = (0, _express2.default)();
 //apply middlewares
 app.use((0, _helmet2.default)());
 app.use((0, _compression2.default)());
 // app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(cors(corsOpt));
 app.use((0, _cors2.default)(corsOpt));
 app.use(_express2.default.urlencoded({ extended: true }));
 app.get("/", function (req, res) {
@@ -134,7 +123,8 @@ var apolloServer = new _apolloServerExpress.ApolloServer({
   }
 });
 
-apolloServer.applyMiddleware({ app: app, path: "/", cors: false }); //disables the a-s-e cors to allow the cors middleware
+// apolloServer.applyMiddleware({ app, path: "/", cors: false });
+apolloServer.applyMiddleware({ app: app }); //disables the a-s-e cors to allow the cors middleware
 
 app.listen(PORT || process.env.PORT, function (error) {
   if (error) Error(error);
