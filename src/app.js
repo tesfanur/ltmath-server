@@ -38,9 +38,14 @@ app.use(helmet());
 app.use(compression());
 // app.use(morgan("combined", { stream: accessLogStream }));
 // app.use(cors(corsOpt));
+// const corsOpt = {
+//   origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
+//   credentials: true,
+// };
+const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
 const corsOpt = {
-  origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
-  credentials: true,
+  origin: process.env.FRONTEND_URL || FRONTEND_URL,
+  credentials: true, // <-- REQUIRED backend setting
 };
 app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
@@ -66,17 +71,21 @@ app.use(
 app.disable("X-Powered-By");
 //intialize apollo server
 const apolloServer = new ApolloServer({
-  cors: {
-    origin: "*", // <- allow request from all domains
-    credentials: true,
-  }, // <- enable CORS response for requests with credentials (cookies, http authentication),
+  // cors: {
+  //   origin: "*", // <- allow request from all domains
+  //   credentials: true,
+  // }, // <- enable CORS response for requests with credentials (cookies, http authentication),
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res }),
 });
 
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
-apolloServer.applyMiddleware({ app, path: "/" }); //disables the a-s-e cors to avoid cors conflict
+apolloServer.applyMiddleware({
+  app,
+  path: "/",
+  cors: false, // disables the apollo-server-express cors to allow the cors middleware use
+});
 
 app.listen(PORT || process.env.PORT, (error) => {
   if (error) Error(error);
