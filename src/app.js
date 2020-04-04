@@ -27,11 +27,6 @@ global.contextCallCounter = 0;
 dotenv.config();
 const { SECRET_KEY } = process.env;
 const PORT = process.env.PORT;
-const corsOpt = {
-  origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
-  credentials: true,
-};
-
 //TODO: use body-parser middleware so that you can grab user post input
 //TODO: write middlware that allows users to login either with their email or username along with their password
 //TODO: download robo 3t for mongodb gui application for your database management
@@ -43,6 +38,10 @@ app.use(helmet());
 app.use(compression());
 // app.use(morgan("combined", { stream: accessLogStream }));
 // app.use(cors(corsOpt));
+const corsOpt = {
+  origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
+  credentials: true,
+};
 app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
@@ -73,7 +72,7 @@ const apolloServer = new ApolloServer({
 });
 
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
-apolloServer.applyMiddleware({ app }); //disables the a-s-e cors to allow the cors middleware
+apolloServer.applyMiddleware({ app, path: "/", cors: false }); //disables the a-s-e cors to avoid cors conflict
 
 app.listen(PORT || process.env.PORT, (error) => {
   if (error) Error(error);
