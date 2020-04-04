@@ -79,6 +79,21 @@ app.use(
 app.disable("X-Powered-By");
 //intialize apollo server
 const apolloServer = new ApolloServer({
+  cors: {
+    credentials: true,
+    origin: (origin, callback) => {
+      const whitelist = [
+        "https://ltmathra.herokuapp.com",
+        "https://ltmathra2.herokuapp.com",
+      ];
+
+      if (whitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  },
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res }),
