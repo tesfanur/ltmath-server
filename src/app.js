@@ -29,7 +29,7 @@ const { SECRET_KEY } = process.env;
 const PORT = process.env.PORT;
 const corsOpt = {
   origin: "*", //http://localhost:5000/graphql
-  credentials: true
+  credentials: true,
 };
 
 //define how to write log messages into a file
@@ -56,6 +56,9 @@ app.use(compression());
 // app.use(morgan("combined", { stream: accessLogStream }));
 app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
+app.get("/", (req, res) => {
+  res.send({ message: "welcome to ltmath!" });
+});
 // To support URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 //TODO: DECIDE WHEN TO YOU USE COOKIE AND SESSION FOR YOUR APP,req
@@ -66,7 +69,7 @@ app.use(
   session({
     secret: SECRET_KEY,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
   })
 );
 //add middleware for the following
@@ -77,12 +80,12 @@ app.disable("X-Powered-By");
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req, res }) => ({ req, res })
+  context: ({ req, res }) => ({ req, res }),
 });
 
 apolloServer.applyMiddleware({ app, path: "/", cors: false }); //disables the a-s-e cors to allow the cors middleware
 
-app.listen(PORT || process.env.PORT, error => {
+app.listen(PORT || process.env.PORT, (error) => {
   if (error) Error(error);
   console.log(
     `🚀 apolloServer ready at http://localhost:${PORT || process.env.PORT}${
