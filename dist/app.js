@@ -113,6 +113,7 @@ app.use((0, _expressSession2.default)({
 app.disable("X-Powered-By");
 //intialize apollo server
 var apolloServer = new _apolloServerExpress.ApolloServer({
+  cors: false,
   typeDefs: _typedefs2.default,
   resolvers: _resolvers2.default,
   context: function context(_ref) {
