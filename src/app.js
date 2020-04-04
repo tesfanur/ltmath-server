@@ -44,10 +44,12 @@ app.use(compression());
 // };
 const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
 const corsOpt = {
-  origin: process.env.FRONTEND_URL || FRONTEND_URL,
+  origin:
+    `https://cors-anywhere.herokuapp.com` & process.env.FRONTEND_URL ||
+    FRONTEND_URL,
   credentials: true, // <-- REQUIRED backend setting
 };
-// app.use(cors(corsOpt));
+app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send({ message: "welcome to ltmath!" });
