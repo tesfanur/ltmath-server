@@ -105,6 +105,9 @@ app.use((0, _compression2.default)());
 // app.use(morgan("combined", { stream: accessLogStream }));
 app.use((0, _cors2.default)(corsOpt));
 app.use(_express2.default.urlencoded({ extended: true }));
+app.get("/", function (req, res) {
+  res.send({ message: "welcome to ltmath!" });
+});
 // To support URL-encoded bodies
 app.use(_bodyParser2.default.urlencoded({ extended: true }));
 //TODO: DECIDE WHEN TO YOU USE COOKIE AND SESSION FOR YOUR APP,req
