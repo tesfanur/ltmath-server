@@ -66,14 +66,17 @@ app.use(
 app.disable("X-Powered-By");
 //intialize apollo server
 const apolloServer = new ApolloServer({
-  cors: false,
+  cors: {
+    origin: "*", // <- allow request from all domains
+    credentials: true,
+  }, // <- enable CORS response for requests with credentials (cookies, http authentication),
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res }),
 });
 
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
-apolloServer.applyMiddleware({ app, path: "/", cors: false }); //disables the a-s-e cors to avoid cors conflict
+apolloServer.applyMiddleware({ app, path: "/" }); //disables the a-s-e cors to avoid cors conflict
 
 app.listen(PORT || process.env.PORT, (error) => {
   if (error) Error(error);

@@ -113,7 +113,10 @@ app.use((0, _expressSession2.default)({
 app.disable("X-Powered-By");
 //intialize apollo server
 var apolloServer = new _apolloServerExpress.ApolloServer({
-  cors: false,
+  cors: {
+    origin: "*", // <- allow request from all domains
+    credentials: true
+  }, // <- enable CORS response for requests with credentials (cookies, http authentication),
   typeDefs: _typedefs2.default,
   resolvers: _resolvers2.default,
   context: function context(_ref) {
@@ -124,7 +127,7 @@ var apolloServer = new _apolloServerExpress.ApolloServer({
 });
 
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
-apolloServer.applyMiddleware({ app: app, path: "/", cors: false }); //disables the a-s-e cors to avoid cors conflict
+apolloServer.applyMiddleware({ app: app, path: "/" }); //disables the a-s-e cors to avoid cors conflict
 
 app.listen(PORT || process.env.PORT, function (error) {
   if (error) Error(error);
