@@ -28,26 +28,14 @@ dotenv.config();
 const { SECRET_KEY } = process.env;
 const PORT = process.env.PORT;
 const corsOpt = {
-  origin: "*", //http://localhost:5000/graphql
+  origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
   credentials: true,
 };
-
-//define how to write log messages into a file
-// const accessLogStream = fs.createWriteStream(
-//   path.join(__dirname, "access.log"),
-//   { flags: "a" }
-// );
 
 //TODO: use body-parser middleware so that you can grab user post input
 //TODO: write middlware that allows users to login either with their email or username along with their password
 //TODO: download robo 3t for mongodb gui application for your database management
 connectToDB();
-// //intialize apollo server
-// const server = new ApolloServer({
-//   typeDefs,
-//   resolvers,
-//   context
-// });
 //instantiate express server app
 const app = express();
 //apply middlewares
@@ -55,7 +43,7 @@ app.use(helmet());
 app.use(compression());
 // app.use(morgan("combined", { stream: accessLogStream }));
 // app.use(cors(corsOpt));
-// app.use(cors());
+app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send({ message: "welcome to ltmath!" });
@@ -79,7 +67,6 @@ app.use(
 app.disable("X-Powered-By");
 //intialize apollo server
 const apolloServer = new ApolloServer({
-  cors: false,
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res }),
