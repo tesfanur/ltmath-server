@@ -47,10 +47,20 @@ const corsOpt = {
   origin: process.env.FRONTEND_URL || FRONTEND_URL,
   credentials: true, // <-- REQUIRED backend setting
 };
-app.use(cors(corsOpt));
+// app.use(cors(corsOpt));
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send({ message: "welcome to ltmath!" });
+});
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json"
+  );
+  next();
 });
 // To support URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));

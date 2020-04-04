@@ -96,10 +96,17 @@ var corsOpt = {
   origin: process.env.FRONTEND_URL || FRONTEND_URL,
   credentials: true // <-- REQUIRED backend setting
 };
-app.use((0, _cors2.default)(corsOpt));
+// app.use(cors(corsOpt));
 app.use(_express2.default.urlencoded({ extended: true }));
 app.get("/", function (req, res) {
   res.send({ message: "welcome to ltmath!" });
+});
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json");
+  next();
 });
 // To support URL-encoded bodies
 app.use(_bodyParser2.default.urlencoded({ extended: true }));
