@@ -83,7 +83,8 @@ const apolloServer = new ApolloServer({
   context: ({ req, res }) => ({ req, res }),
 });
 
-apolloServer.applyMiddleware({ app, path: "/", cors: false }); //disables the a-s-e cors to allow the cors middleware
+// apolloServer.applyMiddleware({ app, path: "/", cors: false });
+apolloServer.applyMiddleware({ app }); //disables the a-s-e cors to allow the cors middleware
 
 app.listen(PORT || process.env.PORT, (error) => {
   if (error) Error(error);
