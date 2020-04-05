@@ -97,7 +97,8 @@ var corsOpt = {
   origin: process.env.FRONTEND_URL || FRONTEND_URL,
   credentials: true // <-- REQUIRED backend setting
 };
-app.use((0, _cors2.default)(corsOpt));
+// app.use(cors(corsOpt));
+app.use((0, _cors2.default)());
 app.use(_express2.default.urlencoded({ extended: true }));
 app.get("/", function (req, res) {
   res.send({ message: "welcome to ltmath!" });
