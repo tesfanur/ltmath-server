@@ -93,7 +93,7 @@ app.use((0, _compression2.default)());
 // };
 var FRONTEND_URL = "https://ltmathra.herokuapp.com/";
 var corsOpt = {
-  origin: "https://cors-anywhere.herokuapp.com" & process.env.FRONTEND_URL,
+  origin: "https://cors-anywhere.herokuapp.com" + process.env.FRONTEND_URL,
   credentials: true // <-- REQUIRED backend setting
 };
 app.use((0, _cors2.default)(corsOpt));
