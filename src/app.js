@@ -49,7 +49,7 @@ const corsOpt = {
   credentials: true, // <-- REQUIRED backend setting
 };
 // app.use(cors(corsOpt));
-app.use(cors());
+app.use(cors({ origin: "*", credentials: true }));
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send({ message: "welcome to ltmath!" });

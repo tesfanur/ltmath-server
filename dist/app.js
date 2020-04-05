@@ -98,7 +98,7 @@ var corsOpt = {
   credentials: true // <-- REQUIRED backend setting
 };
 // app.use(cors(corsOpt));
-app.use((0, _cors2.default)());
+app.use((0, _cors2.default)({ origin: "*", credentials: true }));
 app.use(_express2.default.urlencoded({ extended: true }));
 app.get("/", function (req, res) {
   res.send({ message: "welcome to ltmath!" });
