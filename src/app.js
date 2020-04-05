@@ -42,9 +42,10 @@ app.use(compression());
 //   origin: "https://ltmathra.herokuapp.com/", //http://localhost:5000/graphql
 //   credentials: true,
 // };
+//origin: `https://cors-anywhere.herokuapp.com` + process.env.FRONTEND_URL,
 const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
 const corsOpt = {
-  origin: `https://cors-anywhere.herokuapp.com` + process.env.FRONTEND_URL,
+  origin: process.env.FRONTEND_URL || FRONTEND_URL,
   credentials: true, // <-- REQUIRED backend setting
 };
 app.use(cors(corsOpt));
