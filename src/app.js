@@ -44,9 +44,7 @@ app.use(compression());
 // };
 const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
 const corsOpt = {
-  origin:
-    `https://cors-anywhere.herokuapp.com` & process.env.FRONTEND_URL ||
-    FRONTEND_URL,
+  origin: `https://cors-anywhere.herokuapp.com` & process.env.FRONTEND_URL,
   credentials: true, // <-- REQUIRED backend setting
 };
 app.use(cors(corsOpt));
@@ -54,16 +52,16 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send({ message: "welcome to ltmath!" });
 });
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json"
-  );
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Credentials", true);
+//   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json"
+//   );
+//   next();
+// });
 // To support URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 //TODO: DECIDE WHEN TO YOU USE COOKIE AND SESSION FOR YOUR APP,req
@@ -95,10 +93,11 @@ const apolloServer = new ApolloServer({
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
 apolloServer.applyMiddleware({
   app,
-  path: "/",
-  cors: false, // disables the apollo-server-express cors to allow the cors middleware use
+  path: "/graphql",
+  // cors: false, // disables the apollo-server-express cors to allow the cors middleware use
 });
 
+//======
 app.listen(PORT || process.env.PORT, (error) => {
   if (error) Error(error);
   console.log(

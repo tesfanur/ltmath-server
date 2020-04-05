@@ -93,7 +93,7 @@ app.use((0, _compression2.default)());
 // };
 var FRONTEND_URL = "https://ltmathra.herokuapp.com/";
 var corsOpt = {
-  origin: "https://cors-anywhere.herokuapp.com" & process.env.FRONTEND_URL || FRONTEND_URL,
+  origin: "https://cors-anywhere.herokuapp.com" & process.env.FRONTEND_URL,
   credentials: true // <-- REQUIRED backend setting
 };
 app.use((0, _cors2.default)(corsOpt));
@@ -101,13 +101,16 @@ app.use(_express2.default.urlencoded({ extended: true }));
 app.get("/", function (req, res) {
   res.send({ message: "welcome to ltmath!" });
 });
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Credentials", true);
+//   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json"
+//   );
+//   next();
+// });
 // To support URL-encoded bodies
 app.use(_bodyParser2.default.urlencoded({ extended: true }));
 //TODO: DECIDE WHEN TO YOU USE COOKIE AND SESSION FOR YOUR APP,req
@@ -141,10 +144,11 @@ var apolloServer = new _apolloServerExpress.ApolloServer({
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
 apolloServer.applyMiddleware({
   app: app,
-  path: "/",
-  cors: false // disables the apollo-server-express cors to allow the cors middleware use
+  path: "/graphql"
+  // cors: false, // disables the apollo-server-express cors to allow the cors middleware use
 });
 
+//======
 app.listen(PORT || process.env.PORT, function (error) {
   if (error) Error(error);
   console.log("\uD83D\uDE80 apolloServer ready at http://localhost:" + (PORT || process.env.PORT) + apolloServer.graphqlPath);
