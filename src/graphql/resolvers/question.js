@@ -3,7 +3,7 @@ import UserModel from "./../../models/UserModel";
 import QuestionModel from "./../../models/QuestionModel";
 import TopicModel from "../../models/TopicModel";
 import SubTopicModel from "../../models/SubTopicModel";
-const isValidObjectId = _id => mongoose.Types.ObjectId.isValid(_id);
+const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
 /**
  * Question Mutation Resolvers
     addQuestion(input: QuestionInput): Question
@@ -33,7 +33,7 @@ const addQuestion = async (_, { input }, { req, res }) => {
     multipleChoice,
     imageUrl,
     answer,
-    explanation
+    explanation,
   } = input;
 
   const newQuestion = new QuestionModel({
@@ -45,14 +45,24 @@ const addQuestion = async (_, { input }, { req, res }) => {
     multipleChoice,
     imageUrl,
     answer,
-    explanation
+    explanation,
   });
   await newQuestion.save();
   return newQuestion;
 };
 const editQuestion = async (_, { input }, { req, res }) => {
+  let { _id, description } = input;
   //destructure user input
-  const { username, email, password, usertype } = input;
+  let updatedQuestion;
+  try {
+    updatedQuestion = await QuestionModel.findOneAndUpdate(
+      { _id },
+      { description }
+    );
+  } catch (error) {
+    throw Error("Unable to update sub topic");
+  }
+  return updatedQuestion;
 
   return null;
 };
@@ -62,8 +72,17 @@ const editQuestion = async (_, { input }, { req, res }) => {
  * @param {*} param1
  * @param {*} param2
  */
-const deleteQuestion = async (_, { _id }, { req, res }) => {
-  return {};
+const deleteQuestion = async (_, { input }, { req, res }) => {
+  console.log({ input });
+  let question;
+  try {
+    question = await QuestionModel.findOneAndDelete({ _id: input });
+    console.log({ question });
+  } catch (error) {
+    throw Error("Something went wrong!");
+  }
+
+  return question;
 };
 /**
  *
@@ -73,7 +92,7 @@ const deleteQuestion = async (_, { _id }, { req, res }) => {
 const addTopic = async (_, { description }) => {
   if (!description) throw Error("User input error");
   const existingTopic = await TopicModel.findOne({
-    description: description.trim()
+    description: description.trim(),
   });
   console.log({ existingTopic });
   if (existingTopic) throw Error("This sub topic already exists");
@@ -91,7 +110,7 @@ const addSubTopic = async (_, { description }) => {
   //check the user role or user type before executing the code below to the database
   if (!description) throw Error("User input error");
   const existingSubtopic = await SubTopicModel.findOne({
-    description: description.trim()
+    description: description.trim(),
   });
   console.log({ existingSubtopic });
   if (existingSubtopic) throw Error("This sub topic already exists");
@@ -112,7 +131,16 @@ const deleteTopic = async (_, { _id }, { req, res }) => {
   return {};
 };
 const editSubTopic = async (_, { _id }, { req, res }) => {
-  return {};
+  let updatedSubTopic;
+  try {
+    updatedSubTopic = await SubTopicModel.findOneAndUpdate(
+      { _id },
+      { description }
+    );
+  } catch (error) {
+    throw Error("Unable to update sub topic");
+  }
+  return updatedSubTopic;
 };
 const deleteSubTopic = async (_, { _id }, { req, res }) => {
   return {};
@@ -214,7 +242,7 @@ const questionResolvers = {
     getRondomQuestion,
     getRondomQuestions,
     getAllTopics,
-    getAllSubTopics
+    getAllSubTopics,
   },
   Mutation: {
     addQuestion,
@@ -225,7 +253,7 @@ const questionResolvers = {
     editTopic,
     deleteTopic,
     editSubTopic,
-    deleteSubTopic
-  }
+    deleteSubTopic,
+  },
 };
 export { questionResolvers };
