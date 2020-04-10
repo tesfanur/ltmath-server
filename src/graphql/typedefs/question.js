@@ -4,6 +4,28 @@ import { gql } from "apollo-server-express";
 //Math question type definition
 const questionTypedefs = gql`
   """
+  Subject
+  """
+  type Subject {
+    _id: ID!
+    subjectName: String
+  }
+  """
+  Topic of question
+  """
+  type Topic {
+    _id: Int!
+    description: String!
+  }
+  """
+  Sub Topic of question
+  """
+  type SubTopic {
+    _id: Int!
+    description: String!
+  }
+
+  """
   Is the complexity level of the question
   """
   enum complexityLevel {
@@ -19,20 +41,6 @@ const questionTypedefs = gql`
     WORKOUT
     MATCHING
     WORD_PROBLEM
-  }
-  """
-  Topic of question
-  """
-  type Topic {
-    _id: Int!
-    description: String!
-  }
-  """
-  Sub Topic of question
-  """
-  type SubTopic {
-    _id: Int!
-    description: String!
   }
   """
   List of all multiple Choices
@@ -72,15 +80,23 @@ const questionTypedefs = gql`
   }
 
   input TopicInput {
-    _id: Int!
+    _id: ID!
     description: String!
   }
   input SubTopicInput {
-    _id: Int!
+    _id: ID!
     description: String!
   }
 
   extend type Query {
+    """
+    finds subject by id
+    """
+    getSubjectById(_id: ID!): Subject!
+    """
+    finds all subject
+    """
+    getAllSubjects: [Subject]!
     """
     finds question by question id
     """
@@ -123,6 +139,19 @@ const questionTypedefs = gql`
   }
   extend type Mutation {
     """
+    add Subject
+    """
+    addSubject(subjectName: String): Subject
+    """
+    edit Subject
+    """
+    editSubject(_id: ID): Subject
+    """
+    delete Subject
+    """
+    deleteSubject(_id: ID): Subject
+
+    """
     add question into db
     """
     addQuestion(input: QuestionInput): Question
@@ -133,7 +162,7 @@ const questionTypedefs = gql`
     """
     remove question from db
     """
-    deleteQuestion(input: ID): Question
+    deleteQuestion(_id: ID): Question
     """
     add topic
     """

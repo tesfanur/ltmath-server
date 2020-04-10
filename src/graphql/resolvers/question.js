@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import UserModel from "./../../models/UserModel";
 import QuestionModel from "./../../models/QuestionModel";
 import TopicModel from "../../models/TopicModel";
+import SubjectModel from "../../models/SubjectModel";
 import SubTopicModel from "../../models/SubTopicModel";
 const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
 /**
@@ -23,6 +24,8 @@ const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
  */
 
 const addQuestion = async (_, { input }, { req, res }) => {
+  //get current user so that you can add who created the question
+  //on the way check if the use is admin
   //destructure user input
   const {
     questionNumber,
@@ -72,17 +75,35 @@ const editQuestion = async (_, { input }, { req, res }) => {
  * @param {*} param1
  * @param {*} param2
  */
-const deleteQuestion = async (_, { input }, { req, res }) => {
-  console.log({ input });
+const deleteQuestion = async (_, { _id }, { req, res }) => {
+  console.log({ _id });
+  if (!isValidObjectId(_id)) throw Error("Invalid question id");
   let question;
   try {
-    question = await QuestionModel.findOneAndDelete({ _id: input });
+    question = await QuestionModel.findOneAndDelete({ _id });
     console.log({ question });
   } catch (error) {
     throw Error("Something went wrong!");
   }
 
   return question;
+};
+
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ */
+const addSubject = async (_, { subjectName }) => {
+  if (!subjectName) throw Error("User input error");
+  const existingSubject = await SubjectModel.findOne({
+    subjectName: subjectName.trim(),
+  });
+  console.log({ existingSubject });
+  if (existingSubject) throw Error("This sub Subject already exists");
+  const subject = new SubjectModel({ subjectName });
+  await subject.save();
+  return subject;
 };
 /**
  *
@@ -173,6 +194,12 @@ getAllSubTopics: [SubTopic!]!
     getAllTopics,
     getAllSubTopics
  */
+const getSubjectById = async (_, { _id }, { req, res }) => {
+  if (!isValidObjectId(_id)) throw Error("Invalide Subject id");
+  const subject = await SubjectModel.findById(_id);
+  return subject;
+};
+
 const getQuestionById = async (_, { _id }, { req, res }) => {
   if (!isValidObjectId(_id)) throw Error("Invalide question id");
   const question = await QuestionModel.findById(_id);
@@ -231,9 +258,15 @@ const getAllSubTopics = async (_, args) => {
   const subTopics = await SubTopicModel.find();
   return subTopics;
 };
+const getAllSubjects = async (_, args) => {
+  const subjects = await SubjectModel.find();
+  return subjects;
+};
 
 const questionResolvers = {
   Query: {
+    getAllSubjects,
+    getSubjectById,
     getQuestionById,
     getAllQuestions,
     getAllQuestionsByTopic,
@@ -245,6 +278,7 @@ const questionResolvers = {
     getAllSubTopics,
   },
   Mutation: {
+    addSubject,
     addQuestion,
     editQuestion,
     deleteQuestion,
@@ -256,4 +290,5 @@ const questionResolvers = {
     deleteSubTopic,
   },
 };
+//TODO: add insert many collection at a time for subject, topic, subtopic and others too
 export { questionResolvers };

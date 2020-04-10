@@ -1,25 +1,26 @@
 import { Schema, model } from "mongoose";
 
+const { ObjectId } = Schema.Types;
 const ChoiceSchema = new Schema({
-  description: { type: String, required: true }
+  description: { type: String, required: true },
 });
 
 const QuestionSchema = new Schema(
   {
     questionNumber: { type: String },
     description: { type: String, required: true },
-    topic: { type: String, required: true },
-    subtopic: { type: String, required: true },
+    topicId: { type: ObjectId, ref: "Topic" },
+    subtopic: { description: { type: String, required: true } },
     complexityLevel: {
       type: String,
       enum: ["EASY", "MEDIUM", "HARD"],
-      default: "MEDIUM"
+      default: "MEDIUM",
     },
     multipleChoice: [ChoiceSchema],
     imageUrl: { type: String },
     answer: { type: String },
     explanation: { type: String },
-    addedBy: { type: Schema.Types.ObjectId, ref: "User" }
+    addedBy: { type: ObjectId, ref: "User" },
   },
   { timestamps: true }
 );
