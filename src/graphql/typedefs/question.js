@@ -14,15 +14,37 @@ const questionTypedefs = gql`
   Topic of question
   """
   type Topic {
-    _id: Int!
-    description: String!
+    topic: String
   }
+  """
+  Topic of question
+  """
+  type Topics {
+    _id: ID!
+    subjectId: ID!
+    topics: [Topic]!
+  }
+  """
+  Topic Input
+  """
+  input TopicInput {
+    topic: String!
+  }
+  """
+  Topic of question
+  """
+  type SubTopic {
+    _id: ID!
+    subjectId: ID!
+    subTopic: String!
+  }
+
   """
   Sub Topic of question
   """
-  type SubTopic {
-    _id: Int!
-    description: String!
+  type SubTopics {
+    _id: ID!
+    subTopics: [Topic]
   }
 
   """
@@ -79,10 +101,10 @@ const questionTypedefs = gql`
     explanation: String
   }
 
-  input TopicInput {
-    _id: ID!
-    description: String!
-  }
+  # input TopicInput {
+  #   _id: ID!
+  #   topicName: String!
+  # }
   input SubTopicInput {
     _id: ID!
     description: String!
@@ -166,15 +188,15 @@ const questionTypedefs = gql`
     """
     add topic
     """
-    addTopic(description: String): Topic
+    addTopic(topicNameArr: [TopicInput], subjectId: ID): Topics
     """
     edit topic
     """
-    editTopic(description: String): Topic
+    editTopic(topicName: String): Topic
     """
     delete topic
     """
-    deleteTopic(description: String): Topic
+    deleteTopic(topicName: String): Topic
     """
     add sub topic
     """

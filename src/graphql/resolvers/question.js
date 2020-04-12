@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+
 import UserModel from "./../../models/UserModel";
 import QuestionModel from "./../../models/QuestionModel";
 import TopicModel from "../../models/TopicModel";
 import SubjectModel from "../../models/SubjectModel";
 import SubTopicModel from "../../models/SubTopicModel";
+import e from "express";
 const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
 /**
  * Question Mutation Resolvers
@@ -110,16 +112,85 @@ const addSubject = async (_, { subjectName }) => {
  * @param {*} _
  * @param {*} param1
  */
-const addTopic = async (_, { description }) => {
-  if (!description) throw Error("User input error");
-  const existingTopic = await TopicModel.findOne({
-    description: description.trim(),
+const addTopic = async (_, { topicNameArr, subjectId }) => {
+  const isValidSubjectId = isValidObjectId(subjectId);
+  const subjectExistsInSubjColl = await SubjectModel.findById(subjectId);
+
+  const subjectExistsInTopicColl = await TopicModel.findOne({ subjectId });
+
+  // console.log({ subjectExistsInTopicColl });
+  const topics = topicNameArr;
+  // console.log({
+  //   subjectExistsInSubjColl,
+  //   subjectExistsInTopicColl,
+  //   topics,
+  //   topicNameArr,
+  // });
+  let topicExist = await TopicModel.findOne({
+    "topics.topic": topics[0].topic,
   });
-  console.log({ existingTopic });
-  if (existingTopic) throw Error("This sub topic already exists");
-  const topic = new TopicModel({ description });
-  await topic.save();
-  return topic;
+  if (topicExist) {
+    console.log("Topic Already exisits");
+    throw Error("Topic Already exisits");
+  }
+  console.log({
+    topicExist: JSON.stringify(topicExist),
+    topic: topics[0].topic,
+    topics,
+  });
+  let topic;
+  if (subjectExistsInSubjColl) {
+    const subjId = subjectExistsInSubjColl._id.toString();
+    if (!subjectExistsInTopicColl && isValidSubjectId) {
+      console.log({ subjectId, topics });
+
+      //   try {
+      //     topic = new TopicModel({
+      //       subjectId: subjId,
+      //       topics: topics,
+      //     });
+
+      //     await topic.save();
+      //     // console.log({ topic: JSON.stringify(topic) });
+      //     console.log({ test1: `test1` });
+      //     return topic;
+      //   } catch (error) {
+      //     console.log({ test2: `test2` });
+      //     console.log({ exc: error });
+      //   }
+    }
+    // console.log({ test3: `test3` });
+    console.log({ subjectExistsInTopicColl: subjectExistsInTopicColl.topics });
+    console.log({ topicsTobeAdded: topics });
+    subjectExistsInTopicColl.topics.push({ $each: topics, $position: 0 });
+    return await subjectExistsInTopicColl.save();
+  } else {
+    if (!subjectExistsInTopicColl && isValidSubjectId) {
+      // console.log({ subjectId, topics });
+      try {
+        console.log({ test4: `test4` });
+        topic = new TopicModel({ subjectId, topics: topics });
+        await topic.save();
+        // console.log({ topic: JSON.stringify(topic) });
+        return topic;
+      } catch (error) {
+        console.log({ test5: `test5` });
+        console.log({ error });
+      }
+    }
+  }
+  // if (!topicName && !isValidSubjectId) throw Error("User input error");
+  // const existingTopic = await TopicModel.findOne({
+  //   topicName: topicName.trim(),
+  // });
+  // console.log({ existingTopic });
+  // if (existingTopic) throw Error("This sub topic already exists");
+
+  // const topic = new TopicModel({ topicName });
+  // await topic.save();
+  // await topic.save();
+  // console.log({ topic: JSON.stringify(topic) });
+  // return topic;
 };
 /**
  *
@@ -228,6 +299,11 @@ const getAllQuestionsComplexityLevel = async (_, { complexityLevel }) => {
   if (!questions) throw Error("No question found");
   return questions;
 };
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ */
 const getRondomQuestion = async (_, args) => {
   const questions = await QuestionModel.find();
   if (!questions) throw Error("No question found");
@@ -235,6 +311,11 @@ const getRondomQuestion = async (_, args) => {
   if (length > 1) return questions[Math.floor(Math.random() * length)];
   throw Error("No question found");
 };
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ */
 const getRondomQuestions = async (_, args) => {
   //TODO: limit the number of questions to be returned
   const questions = await QuestionModel.find();
@@ -250,14 +331,30 @@ const getRondomQuestions = async (_, args) => {
   }
   return tempRandomQuestionArray;
 };
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ */
 const getAllTopics = async (_, args) => {
   const topics = await TopicModel.find();
+  if (!topics) throw Error("No topic found");
   return topics;
 };
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ */
 const getAllSubTopics = async (_, args) => {
   const subTopics = await SubTopicModel.find();
   return subTopics;
 };
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ */
 const getAllSubjects = async (_, args) => {
   const subjects = await SubjectModel.find();
   return subjects;
@@ -265,8 +362,10 @@ const getAllSubjects = async (_, args) => {
 
 const questionResolvers = {
   Query: {
+    //subject sub domain
     getAllSubjects,
     getSubjectById,
+    //question sub domain
     getQuestionById,
     getAllQuestions,
     getAllQuestionsByTopic,
@@ -274,18 +373,24 @@ const questionResolvers = {
     getAllQuestionsComplexityLevel,
     getRondomQuestion,
     getRondomQuestions,
+    //topic sub domain
     getAllTopics,
+    //subtopic sub domain
     getAllSubTopics,
   },
   Mutation: {
+    //subject sub domain
     addSubject,
+    //question sub domain
     addQuestion,
     editQuestion,
     deleteQuestion,
+    //topic sub domain
     addTopic,
-    addSubTopic,
     editTopic,
     deleteTopic,
+    //subtopic sub domain
+    addSubTopic,
     editSubTopic,
     deleteSubTopic,
   },
