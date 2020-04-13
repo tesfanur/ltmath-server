@@ -14,6 +14,7 @@ const questionTypedefs = gql`
   Topic of question
   """
   type Topic {
+    _id: ID
     topic: String
   }
   """
@@ -31,11 +32,17 @@ const questionTypedefs = gql`
     topic: String!
   }
   """
+  Sub Topic Input
+  """
+  input SubTopicInput {
+    subTopic: String!
+  }
+  """
   Topic of question
   """
   type SubTopic {
     _id: ID!
-    subjectId: ID!
+    topicId: ID!
     subTopic: String!
   }
 
@@ -44,7 +51,8 @@ const questionTypedefs = gql`
   """
   type SubTopics {
     _id: ID!
-    subTopics: [Topic]
+    topicId: ID
+    subTopics: [SubTopic]
   }
 
   """
@@ -101,15 +109,6 @@ const questionTypedefs = gql`
     explanation: String
   }
 
-  # input TopicInput {
-  #   _id: ID!
-  #   topicName: String!
-  # }
-  input SubTopicInput {
-    _id: ID!
-    description: String!
-  }
-
   extend type Query {
     """
     finds subject by id
@@ -153,11 +152,15 @@ const questionTypedefs = gql`
     """
     get random questions
     """
-    getAllTopics: [Topic!]!
+    getAllTopics: [Topics]
+    """
+    get Topic by id
+    """
+    getTopicById(_id: ID): Topic
     """
     get random questions
     """
-    getAllSubTopics: [SubTopic!]!
+    getAllSubTopics: [SubTopics]!
   }
   extend type Mutation {
     """
@@ -200,7 +203,7 @@ const questionTypedefs = gql`
     """
     add sub topic
     """
-    addSubTopic(description: String): SubTopic
+    addSubTopic(subTopicNameArr: [SubTopicInput], topicId: ID): SubTopics
     """
     edit sub topic
     """

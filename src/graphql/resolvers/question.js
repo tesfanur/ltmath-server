@@ -118,14 +118,8 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
 
   const subjectExistsInTopicColl = await TopicModel.findOne({ subjectId });
 
-  // console.log({ subjectExistsInTopicColl });
   const topics = topicNameArr;
-  // console.log({
-  //   subjectExistsInSubjColl,
-  //   subjectExistsInTopicColl,
-  //   topics,
-  //   topicNameArr,
-  // });
+
   let topicExist = await TopicModel.findOne({
     "topics.topic": topics[0].topic,
   });
@@ -144,20 +138,20 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
     if (!subjectExistsInTopicColl && isValidSubjectId) {
       console.log({ subjectId, topics });
 
-      //   try {
-      //     topic = new TopicModel({
-      //       subjectId: subjId,
-      //       topics: topics,
-      //     });
+      try {
+        topic = new TopicModel({
+          subjectId: subjId,
+          topics: topics,
+        });
 
-      //     await topic.save();
-      //     // console.log({ topic: JSON.stringify(topic) });
-      //     console.log({ test1: `test1` });
-      //     return topic;
-      //   } catch (error) {
-      //     console.log({ test2: `test2` });
-      //     console.log({ exc: error });
-      //   }
+        await topic.save();
+        // console.log({ topic: JSON.stringify(topic) });
+        console.log({ test1: `test1` });
+        return topic;
+      } catch (error) {
+        console.log({ test2: `test2` });
+        console.log({ exc: error });
+      }
     }
     // console.log({ test3: `test3` });
     console.log({ subjectExistsInTopicColl: subjectExistsInTopicColl.topics });
@@ -179,36 +173,75 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
       }
     }
   }
-  // if (!topicName && !isValidSubjectId) throw Error("User input error");
-  // const existingTopic = await TopicModel.findOne({
-  //   topicName: topicName.trim(),
-  // });
-  // console.log({ existingTopic });
-  // if (existingTopic) throw Error("This sub topic already exists");
-
-  // const topic = new TopicModel({ topicName });
-  // await topic.save();
-  // await topic.save();
-  // console.log({ topic: JSON.stringify(topic) });
-  // return topic;
 };
 /**
  *
  * @param {*} _
  * @param {*} param1
  */
-const addSubTopic = async (_, { description }) => {
-  //TODO: since only admin user has the right to add sub topics and other writing access
-  //check the user role or user type before executing the code below to the database
-  if (!description) throw Error("User input error");
-  const existingSubtopic = await SubTopicModel.findOne({
-    description: description.trim(),
+const addSubTopic = async (_, { subTopicNameArr, topicId }) => {
+  const isValidTopicId = isValidObjectId(topicId);
+  const subjectExistsInSubjColl = await SubjectModel.findById(topicId);
+
+  const subjectExistsInTopicColl = await SubTopicModel.findOne({ topicId });
+
+  const subTopics = subTopicNameArr;
+
+  let topicExist = await SubTopicModel.findOne({
+    "subTopics.topic": subTopics[0].subTopic,
   });
-  console.log({ existingSubtopic });
-  if (existingSubtopic) throw Error("This sub topic already exists");
-  const subTopic = new SubTopicModel({ description });
-  await subTopic.save();
-  return subTopic;
+  if (topicExist) {
+    console.log("Topic Already exisits");
+    throw Error("Topic Already exisits");
+  }
+  console.log({
+    topicExist: JSON.stringify(topicExist),
+    topic: subTopics[0].topic,
+    subTopics,
+  });
+  let topic;
+  if (subjectExistsInSubjColl) {
+    const subjId = subjectExistsInSubjColl._id.toString();
+    if (!subjectExistsInTopicColl && isValidTopicId) {
+      console.log({ subjectId, subTopics });
+
+      try {
+        topic = new SubTopicModel({
+          subjectId: subjId,
+          subTopics: subTopics,
+        });
+
+        await topic.save();
+        // console.log({ topic: JSON.stringify(topic) });
+        console.log({ test1: `test1` });
+        return topic;
+      } catch (error) {
+        console.log({ test2: `test2` });
+        console.log({ exc: error });
+      }
+    }
+    // console.log({ test3: `test3` });
+    console.log({
+      subjectExistsInTopicColl: subjectExistsInTopicColl.subTopics,
+    });
+    console.log({ subTopicsTobeAdded: subTopics });
+    subjectExistsInTopicColl.subTopics.push({ $each: subTopics, $position: 0 });
+    return await subjectExistsInTopicColl.save();
+  } else {
+    if (!subjectExistsInTopicColl && isValidTopicId) {
+      // console.log({ subjectId, subTopics });
+      try {
+        console.log({ test4: `test4` });
+        topic = new SubTopicModel({ topicId, subTopics: subTopics });
+        await topic.save();
+        // console.log({ topic: JSON.stringify(topic) });
+        return topic;
+      } catch (error) {
+        console.log({ test5: `test5` });
+        console.log({ error });
+      }
+    }
+  }
 };
 /**
  *
@@ -339,7 +372,29 @@ const getRondomQuestions = async (_, args) => {
 const getAllTopics = async (_, args) => {
   const topics = await TopicModel.find();
   if (!topics) throw Error("No topic found");
+  console.log({ topics: JSON.stringify(topics) });
   return topics;
+};
+//
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ */
+const getTopicById = async (_, { _id }) => {
+  console.log({ _id });
+  //https://codelikethis.com/lessons/db/mongodb-array-queries
+  if (!isValidObjectId(_id)) throw Error("Invalid Object ID");
+  const topics = await TopicModel.find({ "topics._id": _id });
+  let topicFound;
+  if (topics && topics.length > 0) {
+    console.log(topics[0]["topics"]);
+    topics[0]["topics"].forEach((topic) => {
+      if (topic._id == _id) topicFound = topic;
+    });
+  }
+  if (!topicFound) throw Error("No topic found");
+  return topicFound;
 };
 /**
  *
@@ -375,6 +430,7 @@ const questionResolvers = {
     getRondomQuestions,
     //topic sub domain
     getAllTopics,
+    getTopicById,
     //subtopic sub domain
     getAllSubTopics,
   },

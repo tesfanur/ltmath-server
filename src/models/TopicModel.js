@@ -2,30 +2,22 @@
 // import uniqueArrayPlugin from "mongoose-unique-array";
 import { Schema, model } from "mongoose";
 const { ObjectId } = Schema.Types;
-const tSchema = new Schema(
+const topicSubSchema = new Schema(
   {
     topic: {
       type: String,
       trim: true,
+      unique: true,
       required: true,
     },
-  },
-  { _id: false }
+  }
+  // { _id: false }
 );
 
 const TopicSchema = new Schema({
-  subjectId: { type: ObjectId, ref: "Subject" }, // ObjectId, //
-  topics: [tSchema],
+  subjectId: { type: ObjectId, ref: "Subject" },
+  topics: [topicSubSchema],
 });
-// TopicSchema.index(
-//   {
-//     subjectId: 1,
-//     // "topics.topic": 1,
-//   },
-//   {
-//     unique: true,
-//   }
-// );
 
 TopicSchema.pre("validate", function validate(next) {
   let unique = [];
@@ -34,12 +26,8 @@ TopicSchema.pre("validate", function validate(next) {
     let prop = `${this.topics[i].topic}-${this.subjectId}`;
 
     if (unique.indexOf(prop) > -1) {
-      console.log(
-        "Hello Tesfish. There is a Duplicated sub document!. " + prop
-      );
-      return next(
-        new Error("Hello Tesfish. There is a Duplicated sub document!. " + prop)
-      );
+      console.log("There is a Duplicated sub document!. " + prop);
+      return next(new Error("There is a Duplicated sub document!. " + prop));
     }
 
     unique.push(prop);

@@ -19,4 +19,5 @@ function connectToDB() {
     console.log(`DB connection error: ${err.message}`);
   });
 }
+
 export default connectToDB;
