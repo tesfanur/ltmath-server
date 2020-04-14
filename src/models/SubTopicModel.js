@@ -11,9 +11,12 @@ const subtopicSubSchema = new Schema({
 });
 
 const SubTopicSchema = new Schema({
-  topicId: { type: ObjectId, ref: "Topic" },
+  topicId: { type: ObjectId, ref: "TopicSubDocument" },
   subTopics: [subtopicSubSchema],
 });
+/**
+ * https://stackoverflow.com/questions/24853383/mongoose-objectid-that-references-a-sub-document
+ */
 
 SubTopicSchema.pre("validate", function validate(next) {
   let unique = [];

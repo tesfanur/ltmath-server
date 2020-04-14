@@ -2,6 +2,14 @@
 // import uniqueArrayPlugin from "mongoose-unique-array";
 import { Schema, model } from "mongoose";
 const { ObjectId } = Schema.Types;
+const subtopicSubSchema = new Schema({
+  subTopic: {
+    type: String,
+    trim: true,
+    unique: true,
+    required: true,
+  },
+});
 const topicSubSchema = new Schema(
   {
     topic: {
@@ -10,14 +18,21 @@ const topicSubSchema = new Schema(
       unique: true,
       required: true,
     },
+    subTopics: [subtopicSubSchema],
   }
   // { _id: false }
 );
 
-const TopicSchema = new Schema({
-  subjectId: { type: ObjectId, ref: "Subject" },
-  topics: [topicSubSchema],
-});
+//register schema so that you can directly refence it
+// export const TopicSubDocument = model("TopicSubDocument", topicSubSchema);
+
+const TopicSchema = new Schema(
+  {
+    subjectId: { type: ObjectId, ref: "Subject" },
+    topics: [topicSubSchema],
+  }
+  // { _id: false }
+);
 
 TopicSchema.pre("validate", function validate(next) {
   let unique = [];

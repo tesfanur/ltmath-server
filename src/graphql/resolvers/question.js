@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 import UserModel from "./../../models/UserModel";
 import QuestionModel from "./../../models/QuestionModel";
@@ -114,10 +114,14 @@ const addSubject = async (_, { subjectName }) => {
  */
 const addTopic = async (_, { topicNameArr, subjectId }) => {
   const isValidSubjectId = isValidObjectId(subjectId);
-  const subjectExistsInSubjColl = await SubjectModel.findById(subjectId);
+  const ExistsInSubjColl = await SubjectModel.findById(subjectId);
 
   const subjectExistsInTopicColl = await TopicModel.findOne({ subjectId });
 
+  // topicNameArr.forEach((topic) => {
+  //   let testTopic = new TopicSubDocument(topic);
+  //   testTopic.save();
+  // });
   const topics = topicNameArr;
 
   let topicExist = await TopicModel.findOne({
@@ -133,8 +137,8 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
     topics,
   });
   let topic;
-  if (subjectExistsInSubjColl) {
-    const subjId = subjectExistsInSubjColl._id.toString();
+  if (ExistsInSubjColl) {
+    const subjId = ExistsInSubjColl._id.toString();
     if (!subjectExistsInTopicColl && isValidSubjectId) {
       console.log({ subjectId, topics });
 
@@ -181,65 +185,104 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
  */
 const addSubTopic = async (_, { subTopicNameArr, topicId }) => {
   const isValidTopicId = isValidObjectId(topicId);
-  const subjectExistsInSubjColl = await SubjectModel.findById(topicId);
-
-  const subjectExistsInTopicColl = await SubTopicModel.findOne({ topicId });
-
-  const subTopics = subTopicNameArr;
-
-  let topicExist = await SubTopicModel.findOne({
-    "subTopics.topic": subTopics[0].subTopic,
+  const topicDocument = await TopicModel.findOne({
+    "topics._id": topicId,
   });
-  if (topicExist) {
-    console.log("Topic Already exisits");
-    throw Error("Topic Already exisits");
-  }
+  let singleTopicDoc = await TopicModel.findOne({
+    "topics._id": topicId,
+    "topics.subTopics._id": "5e95d3675bb17e4e70f77251",
+  });
   console.log({
-    topicExist: JSON.stringify(topicExist),
-    topic: subTopics[0].topic,
-    subTopics,
+    singleTopicDoc,
   });
-  let topic;
-  if (subjectExistsInSubjColl) {
-    const subjId = subjectExistsInSubjColl._id.toString();
-    if (!subjectExistsInTopicColl && isValidTopicId) {
-      console.log({ subjectId, subTopics });
 
-      try {
-        topic = new SubTopicModel({
-          subjectId: subjId,
-          subTopics: subTopics,
-        });
-
-        await topic.save();
-        // console.log({ topic: JSON.stringify(topic) });
-        console.log({ test1: `test1` });
-        return topic;
-      } catch (error) {
-        console.log({ test2: `test2` });
-        console.log({ exc: error });
-      }
+  console.log({
+    topicDocument: JSON.stringify(topicDocument),
+  });
+  let specificTopic;
+  const subTopics = subTopicNameArr;
+  topicDocument.topics.forEach((topic) => {
+    // console.log({
+    //   isTopicIdEqual: topic._id.toString() === topicId,
+    //   id: topic._id,
+    //   topicId,
+    //   topic,
+    // });
+    if (topic._id.toString() === topicId) {
+      specificTopic = topic;
+      // topic.subtopics.push(...subTopics);
+      topic.subTopics.push({ $each: subTopics, $position: 0 });
+      //.push({ $each: topics, $position: 0 });
     }
-    // console.log({ test3: `test3` });
+  });
+  console.log({
+    specificTopic,
+  });
+  topicDocument.save();
+  let topicExist = topicDocument.topics;
+  // if (topicExist) {
+  //   console.log("Topic Already exisits");
+  //   throw Error("Topic Already exisits");
+  // }
+  //({"topics.subtopics.subTopic":"Relations"})
+  // let subtopic = topicDocument.topics.subtopis.$.id("5e95d3675bb17e4e70f7724f");
+  // console.log({ subtopic });
+  let topic;
+
+  if (!topicDocument) {
     console.log({
-      subjectExistsInTopicColl: subjectExistsInTopicColl.subTopics,
+      subTopics,
     });
-    console.log({ subTopicsTobeAdded: subTopics });
-    subjectExistsInTopicColl.subTopics.push({ $each: subTopics, $position: 0 });
-    return await subjectExistsInTopicColl.save();
-  } else {
-    if (!subjectExistsInTopicColl && isValidTopicId) {
-      // console.log({ subjectId, subTopics });
-      try {
-        console.log({ test4: `test4` });
-        topic = new SubTopicModel({ topicId, subTopics: subTopics });
-        await topic.save();
-        // console.log({ topic: JSON.stringify(topic) });
-        return topic;
-      } catch (error) {
-        console.log({ test5: `test5` });
-        console.log({ error });
-      }
+
+    try {
+      // topic = new TopicModel({
+      //   subjectId: subjId,
+      //   subTopics: subTopics,
+      // });
+      // await topic.save();
+      // console.log({ topic: JSON.stringify(topic) });
+      // console.log({ test1: `test1` });
+      // return topic;
+    } catch (error) {
+      console.log({
+        test2: `test2`,
+      });
+      console.log({
+        exc: error,
+      });
+    }
+  }
+  // console.log({ test3: `test3` });
+  // console.log({
+  //   topics: topicDocument.topics,
+  // });
+  console.log({
+    subTopicsTobeAdded: subTopics,
+  });
+  topicDocument.topics.topic.subTopics.push({
+    $each: subTopics,
+    $position: 0,
+  });
+  return await topicDocument.save();
+
+  if (!topicDocument && isValidTopicId) {
+    // console.log({ subjectId, subTopics });
+    try {
+      console.log({
+        test4: `test4`,
+      });
+      topic = new TopicModel({
+        topicId,
+        subTopics: subTopics,
+      });
+      await topic.save();
+      // console.log({ topic: JSON.stringify(topic) });
+      return topic;
+    } catch (error) {
+      console.log({
+        test5: `test5`,
+      });
+      console.log({ error });
     }
   }
 };
@@ -370,9 +413,14 @@ const getRondomQuestions = async (_, args) => {
  * @param {*} args
  */
 const getAllTopics = async (_, args) => {
-  const topics = await TopicModel.find();
-  if (!topics) throw Error("No topic found");
+  const topics = await TopicModel.find().populate("subjectId");
   console.log({ topics: JSON.stringify(topics) });
+
+  topics[0].topics.forEach(({ topic }) => {
+    console.log({ topic });
+  });
+  if (!topics) throw Error("No topic found");
+
   return topics;
 };
 //
@@ -401,8 +449,45 @@ const getTopicById = async (_, { _id }) => {
  * @param {*} _
  * @param {*} args
  */
-const getAllSubTopics = async (_, args) => {
-  const subTopics = await SubTopicModel.find();
+const getAllSubTopics = async (_, { topicId }) => {
+  const topicDocument = await TopicModel.findOne({ "topics._id": topicId });
+  //   .populate({
+  //   path: "subjectId",
+  //   model: "Subject",
+  // });
+  // .populate({
+  //   path: "subjectId",
+  //   model: "Subject",
+  // });
+  /**
+   * https://www.initialapps.com/mongoose-why-you-may-be-having-issues-populating-across-multiple-levels/
+   * http://frontendcollisionblog.com/mongodb/2016/01/24/mongoose-populate.html
+   * {
+    path: "subjectId",
+    model: "Subject",
+    populate: {
+      path: "topicId",
+      model: "Topic",
+    },
+  }
+   */
+  // .populate("subjectId")
+  // .populate("topicId");
+  // console.log({
+  //   topics: JSON.stringify(topicDocument.topics),
+  // });
+  let { topics } = topicDocument;
+  let subTopics;
+  topics.forEach((topic) => {
+    if (topic._id.toString() === topicId) {
+      subTopics = [topic];
+    }
+  });
+  console.log({
+    topics: JSON.stringify(topics),
+    subTopics: JSON.stringify(subTopics),
+  });
+  // return { topic: topics["topic"], subTopics: subTopics.subTopics };
   return subTopics;
 };
 /**

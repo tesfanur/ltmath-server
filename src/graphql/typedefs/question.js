@@ -42,7 +42,6 @@ const questionTypedefs = gql`
   """
   type SubTopic {
     _id: ID!
-    topicId: ID!
     subTopic: String!
   }
 
@@ -51,7 +50,7 @@ const questionTypedefs = gql`
   """
   type SubTopics {
     _id: ID!
-    topicId: ID
+    topic: ID
     subTopics: [SubTopic]
   }
 
@@ -160,7 +159,7 @@ const questionTypedefs = gql`
     """
     get random questions
     """
-    getAllSubTopics: [SubTopics]!
+    getAllSubTopics(topicId: ID): [SubTopics]!
   }
   extend type Mutation {
     """
