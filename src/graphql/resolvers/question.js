@@ -5,7 +5,11 @@ import QuestionModel from "./../../models/QuestionModel";
 import TopicModel from "../../models/TopicModel";
 import SubjectModel from "../../models/SubjectModel";
 import SubTopicModel from "../../models/SubTopicModel";
-import e from "express";
+import topicTree from "../../utils/topicTree";
+// console.log({ topicTree: JSON.stringify(topicTree) });
+// topicTree.forEach((topic, i) => {
+//   console.log({ i: i + 1, topic: JSON.stringify(topic) });
+// });
 const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
 /**
  * Question Mutation Resolvers
@@ -115,7 +119,6 @@ const addSubject = async (_, { subjectName }) => {
 const addTopic = async (_, { topicNameArr, subjectId }) => {
   const isValidSubjectId = isValidObjectId(subjectId);
   const ExistsInSubjColl = await SubjectModel.findById(subjectId);
-
   const subjectExistsInTopicColl = await TopicModel.findOne({ subjectId });
 
   // topicNameArr.forEach((topic) => {
@@ -185,106 +188,93 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
  */
 const addSubTopic = async (_, { subTopicNameArr, topicId }) => {
   const isValidTopicId = isValidObjectId(topicId);
+  if (!isValidTopicId) throw Error("Invalid Topic Id");
   const topicDocument = await TopicModel.findOne({
     "topics._id": topicId,
   });
-  let singleTopicDoc = await TopicModel.findOne({
-    "topics._id": topicId,
-    "topics.subTopics._id": "5e95d3675bb17e4e70f77251",
-  });
-  console.log({
-    singleTopicDoc,
-  });
-
-  console.log({
-    topicDocument: JSON.stringify(topicDocument),
-  });
-  let specificTopic;
-  const subTopics = subTopicNameArr;
-  topicDocument.topics.forEach((topic) => {
-    // console.log({
-    //   isTopicIdEqual: topic._id.toString() === topicId,
-    //   id: topic._id,
-    //   topicId,
-    //   topic,
-    // });
-    if (topic._id.toString() === topicId) {
-      specificTopic = topic;
-      // topic.subtopics.push(...subTopics);
-      topic.subTopics.push({ $each: subTopics, $position: 0 });
-      //.push({ $each: topics, $position: 0 });
-    }
-  });
-  console.log({
-    specificTopic,
-  });
-  topicDocument.save();
-  let topicExist = topicDocument.topics;
-  // if (topicExist) {
-  //   console.log("Topic Already exisits");
-  //   throw Error("Topic Already exisits");
-  // }
-  //({"topics.subtopics.subTopic":"Relations"})
-  // let subtopic = topicDocument.topics.subtopis.$.id("5e95d3675bb17e4e70f7724f");
-  // console.log({ subtopic });
-  let topic;
-
-  if (!topicDocument) {
-    console.log({
-      subTopics,
-    });
-
-    try {
-      // topic = new TopicModel({
-      //   subjectId: subjId,
-      //   subTopics: subTopics,
-      // });
-      // await topic.save();
-      // console.log({ topic: JSON.stringify(topic) });
-      // console.log({ test1: `test1` });
-      // return topic;
-    } catch (error) {
-      console.log({
-        test2: `test2`,
-      });
-      console.log({
-        exc: error,
-      });
-    }
-  }
-  // console.log({ test3: `test3` });
+  let subTopicsTobeAdded = [...subTopicNameArr];
+  let uniqueSubTopics = [];
+  if (!topicDocument) throw Error("No Topic Found. Please add the top first!");
   // console.log({
-  //   topics: topicDocument.topics,
+  //   topicDocumentTopics: JSON.stringify(topicDocument.topics),
   // });
+  // const subTopics = subTopicNameArr;
+  // let iteratationCount = 0;
   console.log({
-    subTopicsTobeAdded: subTopics,
+    treeLength: topicTree.length,
+    length: topicDocument.topics.length,
   });
-  topicDocument.topics.topic.subTopics.push({
-    $each: subTopics,
-    $position: 0,
-  });
-  return await topicDocument.save();
 
-  if (!topicDocument && isValidTopicId) {
-    // console.log({ subjectId, subTopics });
-    try {
-      console.log({
-        test4: `test4`,
+  let topicName,
+    addedSubTopics = [];
+  topicDocument.topics.forEach((existingTopic) => {
+    //show all ids of the topic
+    // topicTree.forEach((topicFromTopicTree) => {
+    //   if (existingTopic.topic == topicFromTopicTree.topic.trim()) {
+    //     //default sub topics to add
+    //     if (existingTopic && existingTopic.subTopics.length === 0)
+    //       existingTopic.subTopics.push(...topicFromTopicTree.subTopics);
+    //   }
+    // });
+
+    if (existingTopic._id.toString() === topicId) {
+      // if (topic.subTopics.length === 0)
+      //modify this code to add the incoming subtopics in their proper
+      //topic
+      // topic.subTopics.push(...subTopicNameArr);
+      //check if subtopic already exists
+      topicName = existingTopic.topic;
+      let existingSubTopics = [
+        ...new Set(
+          existingTopic.subTopics.map((subtopic) => subtopic.subTopic)
+        ),
+      ];
+      console.log({ existingSubTopics });
+      // subTopicsTobeAdded = topic;
+      console.log({ existingTopic });
+      subTopicsTobeAdded.forEach((sTopic) => {
+        console.log(
+          `existingSubTopics.includes(sTopic.subTopic) ` +
+            existingSubTopics.includes(sTopic.subTopic)
+        );
+        if (existingSubTopics.includes(sTopic.subTopic))
+          throw Error(`"${sTopic.subTopic}" sub topic already exists!`);
+        console.log({ subtopicToBeAdded: sTopic });
+        existingTopic.subTopics.push(sTopic);
+        // await topicDocument.save();
+        // addedSubTopics.push(existingTopic.subTopics.slice(-1));
+        addedSubTopics = [existingTopic];
       });
-      topic = new TopicModel({
-        topicId,
-        subTopics: subTopics,
-      });
-      await topic.save();
-      // console.log({ topic: JSON.stringify(topic) });
-      return topic;
-    } catch (error) {
-      console.log({
-        test5: `test5`,
-      });
-      console.log({ error });
+
+      uniqueSubTopics = [
+        ...new Set(
+          existingTopic.subTopics.map((subtopic) => subtopic.subTopic)
+        ),
+      ];
     }
-  }
+  });
+
+  await topicDocument.save();
+  // console.log({ topicDocument: JSON.stringify(topicDocument) });
+  // console.log({ topics: JSON.stringify(topicDocument.topics) });
+  // console.log({ topicDocument: JSON.stringify(topicDocument) });
+  // let { topics } = topicDocument;
+  // console.log({ topics });
+  let response = {
+    subTopics: addedSubTopics,
+    _id: topicId,
+    topic: topicName,
+  };
+
+  console.log({ response: JSON.stringify(response) });
+  console.log({ addedSubTopics: JSON.stringify(addedSubTopics) });
+  if (!subTopicsTobeAdded) throw Error("Failed to add subtopics");
+  console.log({
+    subTopicsTobeAdded,
+    uniqueSubTopics,
+    topic: [{ subTopics: addedSubTopics }],
+  });
+  return addedSubTopics;
 };
 /**
  *
@@ -414,12 +404,12 @@ const getRondomQuestions = async (_, args) => {
  */
 const getAllTopics = async (_, args) => {
   const topics = await TopicModel.find().populate("subjectId");
+  if (topics.length == 0) throw Error("No topic found. Please add topics");
   console.log({ topics: JSON.stringify(topics) });
 
   topics[0].topics.forEach(({ topic }) => {
     console.log({ topic });
   });
-  if (!topics) throw Error("No topic found");
 
   return topics;
 };
@@ -450,15 +440,10 @@ const getTopicById = async (_, { _id }) => {
  * @param {*} args
  */
 const getAllSubTopics = async (_, { topicId }) => {
+  if (!isValidObjectId(topicId)) throw Error(`Invalid id: ${topicId}`);
   const topicDocument = await TopicModel.findOne({ "topics._id": topicId });
-  //   .populate({
-  //   path: "subjectId",
-  //   model: "Subject",
-  // });
-  // .populate({
-  //   path: "subjectId",
-  //   model: "Subject",
-  // });
+  if (!topicDocument) throw Error(`No topic found with id: ${topicId}`);
+  console.log({ topicDocument });
   /**
    * https://www.initialapps.com/mongoose-why-you-may-be-having-issues-populating-across-multiple-levels/
    * http://frontendcollisionblog.com/mongodb/2016/01/24/mongoose-populate.html

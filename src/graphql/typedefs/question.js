@@ -202,7 +202,7 @@ const questionTypedefs = gql`
     """
     add sub topic
     """
-    addSubTopic(subTopicNameArr: [SubTopicInput], topicId: ID): SubTopics
+    addSubTopic(subTopicNameArr: [SubTopicInput], topicId: ID): [SubTopics]
     """
     edit sub topic
     """
