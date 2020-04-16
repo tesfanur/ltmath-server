@@ -1,35 +1,49 @@
 import { gql } from "apollo-server-express";
 //TODO: add documentation for each query, resolver, etc
 //using triple double quote """Resolved description """
-//Subject/Course type definition
+//Math subject type definition
 const subjectTypedefs = gql`
   """
-  Topic of question
+  Subject
   """
   type Subject {
-    _id: Int!
+    _id: ID!
+    subjectName: String
+  }
+  """
+  Subject Input
+  """
+  input SubjectInput {
     subjectName: String!
   }
-
   extend type Query {
     """
-    get all Subjects
+    finds subject by id
     """
-    getAllSubjects: [Subject!]!
+    getSubjectById(_id: ID!): Subject!
+    """
+    finds all subject
+    """
+    getAllSubjects: [Subject]!
   }
   extend type Mutation {
     """
     add Subject
     """
     addSubject(subjectName: String): Subject
+    # deleteSubject
+    """
+    add Subject
+    """
+    deleteSubject(subjectId: ID): Subject
+
     """
     edit Subject
     """
-    editSubject(subjectName: String): Subject
-    """
-    delete Subject
-    """
-    deleteSubject(subjectName: String): Subject
+    findSubjectByIdAndUpdate(
+      subjectId: ID
+      subjectUpdateOption: SubjectInput
+    ): Subject
   }
 `;
 

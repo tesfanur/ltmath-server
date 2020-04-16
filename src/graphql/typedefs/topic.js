@@ -1,36 +1,95 @@
 import { gql } from "apollo-server-express";
 //TODO: add documentation for each query, resolver, etc
 //using triple double quote """Resolved description """
-//Subject/Course type definition
+//Math question type definition
 const topicTypedefs = gql`
   """
-  Topic
+  Topic of question
   """
   type Topic {
+    _id: ID
+    topic: String
+  }
+  """
+  Topic of question
+  """
+  type Topics {
     _id: ID!
     subjectId: ID!
-    TopicName: String!
+    topics: [Topic]!
+  }
+  """
+  Topic Input
+  """
+  input TopicInput {
+    topic: String!
+  }
+  """
+  Sub Topic Input
+  """
+  input SubTopicInput {
+    subTopic: String!
+  }
+  """
+  Topic of question
+  """
+  type SubTopic {
+    _id: ID!
+    subTopic: String!
+  }
+
+  """
+  Sub Topic of question
+  """
+  type SubTopics {
+    _id: ID!
+    topic: ID
+    subTopics: [SubTopic]
   }
 
   extend type Query {
     """
-    get all Topics
+    get all topics
     """
-    getAllTopics: [Topic!]!
+    getAllTopics: [Topics]
+    """
+    get Topic by id
+    """
+    getTopicById(topicId: ID): Topic
+    """
+    get random questions
+    """
+    getAllSubTopics(topicId: ID): [SubTopics]!
   }
   extend type Mutation {
     """
-    add Topic
+    add topic
     """
-    addTopic(TopicName: String): Topic
+    addTopic(topicNameArr: [TopicInput], subjectId: ID): Topics
     """
-    edit Topic
+    edit topic
     """
-    editTopic(TopicName: String): Topic
+    findTopicByIdAndUpdate(topicId: ID, topicUpdateOption: TopicInput): Topic
     """
-    delete Topic
+    delete topic
     """
-    deleteTopic(TopicName: String): Topic
+    deleteTopic(topicId: ID): [Topics]
+    """
+    add sub topic
+    """
+    addSubTopic(subTopicNameArr: [SubTopicInput], topicId: ID): [SubTopics]
+    """
+    edit sub topic
+    """
+    findSubTopicByIdandUpdate(
+      topicId: ID
+      subTopicId: ID
+      subTopicUpdateOption: SubTopicInput
+    ): [SubTopics]
+    """
+    delete sub topic
+    """
+    deleteSubTopic(topicId: ID, subTopicId: ID): [SubTopics]
   }
 `;
 

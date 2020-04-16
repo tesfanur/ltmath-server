@@ -15,12 +15,12 @@ const UserSchema = new Schema(
       unique: true,
       required: true,
       minlength: 5,
-      maxlength: 50
+      maxlength: 50,
     },
     usertype: {
       type: String,
       enum: ["STUDENT", "PARENT", "TEACHER", "AUTHOR", "ADMIN"],
-      default: "STUDENT"
+      default: "STUDENT",
     },
     email: {
       type: String,
@@ -29,14 +29,14 @@ const UserSchema = new Schema(
       lowercase: true,
       required: true,
       minlength: 5,
-      maxlength: 50
+      maxlength: 50,
     },
     password: {
       type: String,
       required: true,
       minlength: 5,
-      maxlength: 400
-    }
+      maxlength: 400,
+    },
   },
   { timestamps: true }
 );
@@ -46,16 +46,9 @@ const UserSchema = new Schema(
 UserSchema.statics.validate = function validateSchema(User) {
   const schema = Joi.object()
     .keys({
-      username: Joi.string()
-        .alphanum()
-        .min(5)
-        .max(50)
-        .required(),
+      username: Joi.string().alphanum().min(5).max(50).required(),
       password: Joi.string().regex(/^[a-zA-Z0-9]{5,200}$/),
-      email: Joi.string()
-        .min(5)
-        .max(50)
-        .email({ minDomainAtoms: 2 })
+      email: Joi.string().min(5).max(50).email({ minDomainAtoms: 2 }),
     })
     .with("username", "email");
 
@@ -85,9 +78,9 @@ UserSchema.pre("save", async function hashPassword(next) {
 /**
  * compare user password matching
  */
-UserSchema.methods.checkPasswordValidity = async function(password) {
-  const passwordMatches = await compare(password, this.password);
+UserSchema.methods.checkPasswordValidity = async function (password) {
   try {
+    const passwordMatches = await compare(password, this.password);
     if (!passwordMatches)
       throw new AuthenticationError("Invalid Password or Username");
     return passwordMatches;
@@ -100,7 +93,7 @@ UserSchema.methods.checkPasswordValidity = async function(password) {
 /**
  *generate user access token
  */
-UserSchema.methods.generateAccessToken = async function() {
+UserSchema.methods.generateAccessToken = async function () {
   try {
     let user = this;
     let token = await sign(
@@ -115,7 +108,7 @@ UserSchema.methods.generateAccessToken = async function() {
 /**
  * decode user access token
  */
-UserSchema.statics.verifyAccessToken = async function(token) {
+UserSchema.statics.verifyAccessToken = async function (token) {
   // const user = this;
   // console.log({ tokenFromVerifyAccessToken: token });
   if (!token) return new AuthenticationError("Token Authorization failed!");

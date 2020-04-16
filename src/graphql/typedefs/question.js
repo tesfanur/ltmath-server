@@ -4,63 +4,6 @@ import { gql } from "apollo-server-express";
 //Math question type definition
 const questionTypedefs = gql`
   """
-  Subject
-  """
-  type Subject {
-    _id: ID!
-    subjectName: String
-  }
-  """
-  Topic of question
-  """
-  type Topic {
-    _id: ID
-    topic: String
-  }
-  """
-  Topic of question
-  """
-  type Topics {
-    _id: ID!
-    subjectId: ID!
-    topics: [Topic]!
-  }
-  """
-  Topic Input
-  """
-  input TopicInput {
-    topic: String!
-  }
-  """
-  Subject Input
-  """
-  input SubjectInput {
-    subjectName: String!
-  }
-  """
-  Sub Topic Input
-  """
-  input SubTopicInput {
-    subTopic: String!
-  }
-  """
-  Topic of question
-  """
-  type SubTopic {
-    _id: ID!
-    subTopic: String!
-  }
-
-  """
-  Sub Topic of question
-  """
-  type SubTopics {
-    _id: ID!
-    topic: ID
-    subTopics: [SubTopic]
-  }
-
-  """
   Is the complexity level of the question
   """
   enum complexityLevel {
@@ -116,14 +59,6 @@ const questionTypedefs = gql`
 
   extend type Query {
     """
-    finds subject by id
-    """
-    getSubjectById(_id: ID!): Subject!
-    """
-    finds all subject
-    """
-    getAllSubjects: [Subject]!
-    """
     finds question by question id
     """
     getQuestionById(_id: ID!): Question!
@@ -154,38 +89,8 @@ const questionTypedefs = gql`
     #TODO: add the following graphql quesries
     #getRandomQuestionByTopic
     #getRandomQuestionBySubTopic
-    """
-    get random questions
-    """
-    getAllTopics: [Topics]
-    """
-    get Topic by id
-    """
-    getTopicById(_id: ID): Topic
-    """
-    get random questions
-    """
-    getAllSubTopics(topicId: ID): [SubTopics]!
   }
   extend type Mutation {
-    """
-    add Subject
-    """
-    addSubject(subjectName: String): Subject
-    # deleteSubject
-    """
-    add Subject
-    """
-    deleteSubject(subjectId: ID): Subject
-
-    """
-    edit Subject
-    """
-    findSubjectByIdAndUpdate(
-      subjectId: ID
-      subjectUpdateOption: SubjectInput
-    ): Subject
-
     """
     add question into db
     """
@@ -198,34 +103,6 @@ const questionTypedefs = gql`
     remove question from db
     """
     deleteQuestion(_id: ID): Question
-    """
-    add topic
-    """
-    addTopic(topicNameArr: [TopicInput], subjectId: ID): Topics
-    """
-    edit topic
-    """
-    findTopicByIdAndUpdate(topicId: ID, topicUpdateOption: TopicInput): Topic
-    """
-    delete topic
-    """
-    deleteTopic(topicId: ID): [Topics]
-    """
-    add sub topic
-    """
-    addSubTopic(subTopicNameArr: [SubTopicInput], topicId: ID): [SubTopics]
-    """
-    edit sub topic
-    """
-    findSubTopicByIdandUpdate(
-      topicId: ID
-      subTopicId: ID
-      subTopicUpdateOption: SubTopicInput
-    ): [SubTopics]
-    """
-    delete sub topic
-    """
-    deleteSubTopic(topicId: ID, subTopicId: ID): [SubTopics]
   }
 `;
 
