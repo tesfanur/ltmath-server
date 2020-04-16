@@ -60,6 +60,11 @@ const topicTypedefs = gql`
     get random questions
     """
     getAllSubTopics(topicId: ID): [SubTopics]!
+    """
+    get sub topic by id
+    """
+    getSubTopicById(topicId: ID, subTopicId: ID): SubTopic
+    # [SubTopics]!
   }
   extend type Mutation {
     """

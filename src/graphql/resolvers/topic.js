@@ -327,6 +327,40 @@ const getTopicById = async (_, { topicId }) => {
 /**
  *
  * @param {*} _
+ * @param {*} param1
+ */
+const getSubTopicById = async (_, { topicId, subTopicId }) => {
+  console.log({ subTopicId });
+  if (!isValidObjectId(subTopicId)) throw Error("Invalid Object ID");
+  const topics = await TopicModel.findOne({
+    "topics._id": topicId,
+    // "topics.subTopis._id": subTopicId,
+  });
+  console.log({
+    topics: JSON.stringify(topics),
+    length: topics.topics.length,
+    topicstopics: topics.topics,
+  });
+  let topicFound;
+  if (topics) {
+    // console.log(topics[0]["topics"]);
+    topics.topics.forEach((topic) => {
+      console.log({ topic: JSON.stringify(topic) });
+      console.log({
+        topicsubTopicsidsubTopic: topic.subTopics.id(subTopicId),
+      });
+      // if (topic._id.toString() == topicId) topicFound = [topic];
+      // if (topic.subTopics.id(subTopicId)) topicFound = [topic];
+      if (topic.subTopics.id(subTopicId))
+        topicFound = topic.subTopics.id(subTopicId);
+    });
+  }
+  if (!topicFound) throw Error("No topic found");
+  return topicFound;
+};
+/**
+ *
+ * @param {*} _
  * @param {*} args
  */
 const getAllSubTopics = async (_, { topicId }) => {
@@ -350,6 +384,7 @@ const topicResolvers = {
     getTopicById,
     //subtopic sub domain
     getAllSubTopics,
+    getSubTopicById,
   },
   Mutation: {
     //topic sub domain

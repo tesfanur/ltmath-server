@@ -36,8 +36,7 @@ const questionTypedefs = gql`
     _id: ID!
     questionNumber: String!
     description: String!
-    topic: String! #Should be taken from selection option from user
-    subtopic: String! #Should also be taken from selection option from user
+    subTopicId: ID!
     complexityLevel: complexityLevel!
     multipleChoice: [Choice]
     imageUrl: String
@@ -48,13 +47,13 @@ const questionTypedefs = gql`
   input QuestionInput {
     questionNumber: String!
     description: String!
-    topic: String! #Should be taken from selection option from user
-    subtopic: String! #Should also be taken from selection option from user
+    subTopicId: ID!
     complexityLevel: complexityLevel!
     multipleChoice: [ChoiceInput!]!
     imageUrl: String
     answer: String
     explanation: String
+    addedBy: ID
   }
 
   extend type Query {

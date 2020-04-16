@@ -9,8 +9,7 @@ const QuestionSchema = new Schema(
   {
     questionNumber: { type: String },
     description: { type: String, required: true },
-    topicId: { type: ObjectId, ref: "Topic" },
-    subtopic: { description: { type: String, required: true } },
+    subTopicId: { type: ObjectId },
     complexityLevel: {
       type: String,
       enum: ["EASY", "MEDIUM", "HARD"],

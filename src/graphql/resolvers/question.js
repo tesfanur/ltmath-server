@@ -16,25 +16,25 @@ const addQuestion = async (_, { input }, { req, res }) => {
   const {
     questionNumber,
     description,
-    topic,
-    subtopic,
+    subTopicId,
     complexityLevel,
     multipleChoice,
     imageUrl,
     answer,
     explanation,
+    addedBy,
   } = input;
 
   const newQuestion = new QuestionModel({
     questionNumber,
     description,
-    topic,
-    subtopic,
+    subTopicId,
     complexityLevel,
     multipleChoice,
     imageUrl,
     answer,
     explanation,
+    addedBy,
   });
   await newQuestion.save();
   return newQuestion;
