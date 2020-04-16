@@ -32,6 +32,12 @@ const questionTypedefs = gql`
     topic: String!
   }
   """
+  Subject Input
+  """
+  input SubjectInput {
+    subjectName: String!
+  }
+  """
   Sub Topic Input
   """
   input SubTopicInput {
@@ -166,14 +172,19 @@ const questionTypedefs = gql`
     add Subject
     """
     addSubject(subjectName: String): Subject
+    # deleteSubject
+    """
+    add Subject
+    """
+    deleteSubject(subjectId: ID): Subject
+
     """
     edit Subject
     """
-    editSubject(_id: ID): Subject
-    """
-    delete Subject
-    """
-    deleteSubject(_id: ID): Subject
+    findSubjectByIdAndUpdate(
+      subjectId: ID
+      subjectUpdateOption: SubjectInput
+    ): Subject
 
     """
     add question into db
@@ -194,11 +205,11 @@ const questionTypedefs = gql`
     """
     edit topic
     """
-    editTopic(topicName: String): Topic
+    findTopicByIdAndUpdate(topicId: ID, topicUpdateOption: TopicInput): Topic
     """
     delete topic
     """
-    deleteTopic(topicName: String): Topic
+    deleteTopic(topicId: ID): [Topics]
     """
     add sub topic
     """
@@ -206,11 +217,15 @@ const questionTypedefs = gql`
     """
     edit sub topic
     """
-    editSubTopic(description: String): SubTopic
+    findSubTopicByIdandUpdate(
+      topicId: ID
+      subTopicId: ID
+      subTopicUpdateOption: SubTopicInput
+    ): [SubTopics]
     """
     delete sub topic
     """
-    deleteSubTopic(description: String): SubTopic
+    deleteSubTopic(topicId: ID, subTopicId: ID): [SubTopics]
   }
 `;
 

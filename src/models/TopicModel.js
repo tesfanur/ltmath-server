@@ -8,6 +8,7 @@ const subtopicSubSchema = new Schema({
     trim: true,
     unique: true,
     required: true,
+    index: 1,
   },
 });
 const topicSubSchema = new Schema(
@@ -17,6 +18,7 @@ const topicSubSchema = new Schema(
       trim: true,
       unique: true,
       required: true,
+      index: 1,
     },
     subTopics: [subtopicSubSchema],
   }

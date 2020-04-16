@@ -11,6 +11,9 @@ import topicTree from "../../utils/topicTree";
 //   console.log({ i: i + 1, topic: JSON.stringify(topic) });
 // });
 const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
+const validateId = (id) => {
+  if (!isValidObjectId(id)) throw Error("Invalid Topic ID");
+};
 /**
  * Question Mutation Resolvers
     addQuestion(input: QuestionInput): Question
@@ -20,7 +23,7 @@ const isValidObjectId = (_id) => mongoose.Types.ObjectId.isValid(_id);
     addSubTopic(input: SubTopicInput): SubTopic
     editTopic(input: TopicInput): Topic
     deleteTopic(input: TopicInput): Topic
-    editSubTopic(input: SubTopicInput): SubTopic
+    findByIdandUpdateSubTopic(input: SubTopicInput): SubTopic
     deleteSubTopic(input: SubTopicInput): SubTopic
  */
 /**
@@ -111,11 +114,51 @@ const addSubject = async (_, { subjectName }) => {
   await subject.save();
   return subject;
 };
+const deleteSubject = async (_, { subjectId }, { req, res }) => {
+  if (!isValidObjectId(subjectId)) throw Error("Invalid Topic ID");
+  const updatedSubjectDocument = await SubjectModel.findOneAndRemove(
+    { _id: subjectId },
+    { useFindAndModify: false, new: true }
+  );
+  console.log({ updatedSubjectDocument });
+  if (!updatedSubjectDocument)
+    throw Error("No subject found to delete with subject id " + subjectId);
+  return updatedSubjectDocument;
+};
 /**
  *
  * @param {*} _
  * @param {*} param1
  */
+const findSubjectByIdAndUpdate = async (
+  _,
+  { subjectId, subjectUpdateOption }
+) => {
+  if (!isValidObjectId(subjectId)) throw Error("Invalid Topic ID");
+  console.log({ subjectId, subjectUpdateOption });
+  try {
+    const updatedTopicDocument = await SubjectModel.findOneAndUpdate(
+      { _id: subjectId },
+      {
+        subjectName: subjectUpdateOption.subjectName,
+      },
+      { useFindAndModify: false, new: true }
+    );
+    console.log({ updatedTopicDocument });
+    if (!updatedTopicDocument) throw Error("Failed to update");
+
+    return updatedTopicDocument;
+  } catch (error) {
+    throw Error(error);
+  }
+};
+
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ */
+//TODO:refactor the addTopic function in a better way than the following implementation
 const addTopic = async (_, { topicNameArr, subjectId }) => {
   const isValidSubjectId = isValidObjectId(subjectId);
   const ExistsInSubjColl = await SubjectModel.findById(subjectId);
@@ -146,6 +189,7 @@ const addTopic = async (_, { topicNameArr, subjectId }) => {
       console.log({ subjectId, topics });
 
       try {
+        //add default topics
         topic = new TopicModel({
           subjectId: subjId,
           topics: topics,
@@ -255,25 +299,11 @@ const addSubTopic = async (_, { subTopicNameArr, topicId }) => {
   });
 
   await topicDocument.save();
-  // console.log({ topicDocument: JSON.stringify(topicDocument) });
-  // console.log({ topics: JSON.stringify(topicDocument.topics) });
-  // console.log({ topicDocument: JSON.stringify(topicDocument) });
-  // let { topics } = topicDocument;
-  // console.log({ topics });
-  let response = {
-    subTopics: addedSubTopics,
-    _id: topicId,
-    topic: topicName,
-  };
 
-  console.log({ response: JSON.stringify(response) });
-  console.log({ addedSubTopics: JSON.stringify(addedSubTopics) });
-  if (!subTopicsTobeAdded) throw Error("Failed to add subtopics");
-  console.log({
-    subTopicsTobeAdded,
-    uniqueSubTopics,
-    topic: [{ subTopics: addedSubTopics }],
-  });
+  // console.log({ response: JSON.stringify(response) });
+  // console.log({ addedSubTopics: JSON.stringify(addedSubTopics) });
+  if (addedSubTopics.length == 0) throw Error("Failed to add subtopics");
+
   return addedSubTopics;
 };
 /**
@@ -281,27 +311,140 @@ const addSubTopic = async (_, { subTopicNameArr, topicId }) => {
  * @param {*} _
  * @param {*} param1
  */
-const editTopic = async (_, { description }) => {
-  console.log({ description });
-  return {};
-};
-const deleteTopic = async (_, { _id }, { req, res }) => {
-  return {};
-};
-const editSubTopic = async (_, { _id }, { req, res }) => {
-  let updatedSubTopic;
-  try {
-    updatedSubTopic = await SubTopicModel.findOneAndUpdate(
-      { _id },
-      { description }
-    );
-  } catch (error) {
-    throw Error("Unable to update sub topic");
+const findTopicByIdAndUpdate = async (_, { topicId, topicUpdateOption }) => {
+  if (!isValidObjectId(topicId)) throw Error("Invalid Topic ID");
+  const updatedTopicDocument = await TopicModel.findOneAndUpdate(
+    { "topics._id": topicId },
+    {
+      "topics.$.topic": topicUpdateOption.topic,
+    },
+    { useFindAndModify: false, new: true }
+  );
+  if (!updatedTopicDocument) throw Error("Failed to update");
+  let updatedTopic;
+  if (updatedTopicDocument && updatedTopicDocument.topics.length > 0) {
+    updatedTopicDocument.topics.forEach((topic) => {
+      if (topic._id.toString() === topicId) updatedTopic = topic;
+    });
   }
-  return updatedSubTopic;
+  if (!updatedTopic) throw Error("Topic update failed");
+  return updatedTopic;
 };
-const deleteSubTopic = async (_, { _id }, { req, res }) => {
-  return {};
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ * @param {*} param2
+ */
+const deleteTopic = async (_, { topicId }, { req, res }) => {
+  if (!isValidObjectId(topicId)) throw Error("Invalid Topic ID");
+  const updatedTopicDocument = await TopicModel.findOneAndUpdate(
+    { "topics._id": topicId },
+    {
+      $pull: {
+        topics: { _id: topicId },
+      },
+    },
+    { useFindAndModify: false, new: true }
+  );
+
+  if (!updatedTopicDocument)
+    throw Error("No topic found to delete with topic id " + topicId);
+  return [updatedTopicDocument];
+};
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ * @param {*} param2
+ */
+const findSubTopicByIdandUpdate = async (
+  _,
+  { topicId, subTopicId, subTopicUpdateOption }
+) => {
+  if (!isValidObjectId(subTopicId)) throw Error("Invalid Topic ID");
+  const updatedTopicDocument = await TopicModel.findOneAndUpdate(
+    {
+      "topics._id": topicId,
+      "topics.subTopics._id": subTopicId,
+    },
+    {
+      $set: {
+        // "topics.$.subTopics.0.subTopic": subTopicUpdateOption.subTopic,
+        "topics.$[topic].subTopics.$[subTopic].subTopic":
+          subTopicUpdateOption.subTopic,
+      },
+    },
+    {
+      useFindAndModify: false,
+      new: true,
+      arrayFilters: [{ "topic._id": topicId }, { "subTopic._id": subTopicId }],
+    }
+  );
+  console.log({ updatedTopicDocument: JSON.stringify(updatedTopicDocument) });
+  if (!updatedTopicDocument) throw Error("Failed to update");
+  let updatedTopic;
+  if (updatedTopicDocument && updatedTopicDocument.topics.length > 0) {
+    updatedTopicDocument.topics.forEach((topic) => {
+      if (topic._id.toString() === topicId) updatedTopic = [topic];
+    });
+  }
+  if (!updatedTopic) throw Error("Topic update failed");
+  return updatedTopic;
+};
+/**
+ *
+ * @param {*} _
+ * @param {*} param1
+ * @param {*} param2
+ */
+const deleteSubTopic = async (_, { topicId, subTopicId }) => {
+  if (!isValidObjectId(subTopicId)) throw Error("Invalid Topic ID");
+  const updatedTopicDocument = await TopicModel.updateOne(
+    {
+      "topics._id": topicId,
+    },
+    {
+      $pull: {
+        "topics.$.subTopics": {
+          _id: subTopicId,
+        },
+      },
+    },
+    {
+      useFindAndModify: false,
+      new: true,
+    }
+  );
+  console.log({
+    updatedTopicDocument,
+  });
+  //returns of such type object: { updatedTopicDocument: '{"n":1,"nModified":0,"ok":1}' }
+  //or { updatedTopicDocument: '{"n":1,"nModified":1,"ok":1}' }
+  if (updatedTopicDocument.nModified > 0)
+    console.log(`You have successfully removed subtopic with id ${subTopicId}`);
+  else console.log(`Subtopic with id ${subTopicId} doesn't exist`);
+  console.log({
+    updatedTopicDocument: JSON.stringify(updatedTopicDocument),
+  });
+  if (!updatedTopicDocument) throw Error("Failed to update");
+  let topicDocument = await TopicModel.findOne();
+  console.log({
+    topicDocumentFromDeleteSubTopicResolver: topicDocument,
+  });
+  if (!topicDocument) throw Error("No such sub topic found");
+  let { topics } = topicDocument;
+  let subTopics;
+  console.log({
+    topics,
+  });
+  topics.forEach((topic) => {
+    if (topic._id.toString() === topicId) {
+      subTopics = [topic];
+    }
+  });
+
+  return subTopics;
 };
 /**
  *Question Graphql Queries
@@ -405,12 +548,6 @@ const getRondomQuestions = async (_, args) => {
 const getAllTopics = async (_, args) => {
   const topics = await TopicModel.find().populate("subjectId");
   if (topics.length == 0) throw Error("No topic found. Please add topics");
-  console.log({ topics: JSON.stringify(topics) });
-
-  topics[0].topics.forEach(({ topic }) => {
-    console.log({ topic });
-  });
-
   return topics;
 };
 //
@@ -428,7 +565,7 @@ const getTopicById = async (_, { _id }) => {
   if (topics && topics.length > 0) {
     console.log(topics[0]["topics"]);
     topics[0]["topics"].forEach((topic) => {
-      if (topic._id == _id) topicFound = topic;
+      if (topic._id.toString() == _id) topicFound = topic;
     });
   }
   if (!topicFound) throw Error("No topic found");
@@ -444,23 +581,6 @@ const getAllSubTopics = async (_, { topicId }) => {
   const topicDocument = await TopicModel.findOne({ "topics._id": topicId });
   if (!topicDocument) throw Error(`No topic found with id: ${topicId}`);
   console.log({ topicDocument });
-  /**
-   * https://www.initialapps.com/mongoose-why-you-may-be-having-issues-populating-across-multiple-levels/
-   * http://frontendcollisionblog.com/mongodb/2016/01/24/mongoose-populate.html
-   * {
-    path: "subjectId",
-    model: "Subject",
-    populate: {
-      path: "topicId",
-      model: "Topic",
-    },
-  }
-   */
-  // .populate("subjectId")
-  // .populate("topicId");
-  // console.log({
-  //   topics: JSON.stringify(topicDocument.topics),
-  // });
   let { topics } = topicDocument;
   let subTopics;
   topics.forEach((topic) => {
@@ -468,11 +588,6 @@ const getAllSubTopics = async (_, { topicId }) => {
       subTopics = [topic];
     }
   });
-  console.log({
-    topics: JSON.stringify(topics),
-    subTopics: JSON.stringify(subTopics),
-  });
-  // return { topic: topics["topic"], subTopics: subTopics.subTopics };
   return subTopics;
 };
 /**
@@ -507,19 +622,22 @@ const questionResolvers = {
   Mutation: {
     //subject sub domain
     addSubject,
+    deleteSubject,
+    findSubjectByIdAndUpdate,
     //question sub domain
     addQuestion,
     editQuestion,
     deleteQuestion,
     //topic sub domain
     addTopic,
-    editTopic,
+    findTopicByIdAndUpdate,
     deleteTopic,
     //subtopic sub domain
     addSubTopic,
-    editSubTopic,
+    findSubTopicByIdandUpdate,
     deleteSubTopic,
   },
 };
 //TODO: add insert many collection at a time for subject, topic, subtopic and others too
+//TODO:include text search for each field search by topic search by subtopic...
 export { questionResolvers };
