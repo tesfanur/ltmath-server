@@ -84,7 +84,7 @@ const getQuestionById = async (_, { _id }, { req, res }) => {
   const question = await QuestionModel.findById(_id);
   return question;
 };
-const getAllQuestions = async (_, args, { req, res }) => {
+const getAllQuestions = async (_, args) => {
   const questions = await QuestionModel.find();
   if (!questions) throw Error("No question found");
   return questions;
