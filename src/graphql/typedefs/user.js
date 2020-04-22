@@ -37,8 +37,9 @@ const userTypedefs = gql`
   input userRegistrationInput {
     username: String!
     email: String!
+    password: String!
+    confirmPassword: String!
     usertype: UserType = STUDNET
-    password: String
   }
   """
   User signin input type

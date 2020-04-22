@@ -29,7 +29,6 @@ const UserSchema = new Schema(
       lowercase: true,
       required: true,
       minlength: 5,
-      maxlength: 50,
     },
     password: {
       type: String,
@@ -46,8 +45,8 @@ const UserSchema = new Schema(
 UserSchema.statics.validate = function validateSchema(User) {
   const schema = Joi.object()
     .keys({
-      username: Joi.string().alphanum().min(5).max(50).required(),
-      password: Joi.string().regex(/^[a-zA-Z0-9]{5,200}$/),
+      username: Joi.string().min(5).max(50).required(),
+      password: Joi.string().min(5),
       email: Joi.string().min(5).max(50).email({ minDomainAtoms: 2 }),
     })
     .with("username", "email");
@@ -81,10 +80,11 @@ UserSchema.pre("save", async function hashPassword(next) {
 UserSchema.methods.checkPasswordValidity = async function (password) {
   try {
     const passwordMatches = await compare(password, this.password);
-    if (!passwordMatches)
-      throw new AuthenticationError("Invalid Password or Username");
+    // if (!passwordMatches)
+    //   throw new AuthenticationError("Invalid Password or Username");
     return passwordMatches;
   } catch (error) {
+    console.log({ error });
     throw new AuthenticationError(
       `Something went wrong. Try again later please. error: ${error}`
     );
