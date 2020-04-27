@@ -94,11 +94,11 @@ app.use((0, _compression2.default)());
 //   credentials: true,
 // };
 //origin: `https://cors-anywhere.herokuapp.com` + process.env.FRONTEND_URL,
-var FRONTEND_URL = "https://ltmathra.herokuapp.com/";
-var corsOpt = {
-  origin: process.env.FRONTEND_URL || FRONTEND_URL,
-  credentials: true // <-- REQUIRED backend setting
-};
+// const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
+// const corsOpt = {
+//   origin: process.env.FRONTEND_URL || FRONTEND_URL,
+//   credentials: true, // <-- REQUIRED backend setting
+// };
 // app.use(cors(corsOpt));
 app.use((0, _cors2.default)({ origin: "*", credentials: true }));
 app.use(_express2.default.urlencoded({ extended: true }));
@@ -116,6 +116,7 @@ app.get("/", function (req, res) {
 //   next();
 // });
 // To support URL-encoded bodies
+console.log({ env: app.get("env") });
 app.use(_bodyParser2.default.urlencoded({ extended: true }));
 //TODO: DECIDE WHEN TO YOU USE COOKIE AND SESSION FOR YOUR APP,req
 // To parse cookies from the HTTP Request
@@ -134,7 +135,7 @@ app.disable("X-Powered-By");
 var apolloServer = new _apolloServerExpress.ApolloServer({
   // cors: {
   //   origin: "*", // <- allow request from all domains
-  //   credentials: true,
+  // credentials: true // <-- REQUIRED backend setting
   // }, // <- enable CORS response for requests with credentials (cookies, http authentication),
   typeDefs: _typedefs2.default,
   resolvers: _resolvers2.default,
@@ -142,11 +143,11 @@ var apolloServer = new _apolloServerExpress.ApolloServer({
     var req = _ref.req,
         res = _ref.res;
     return { req: req, res: res };
-  },
-  formatError: function formatError(err) {
-    // Don't give the specific errors to the client.    if (err.message.startsWith("Database Error: ")) {      return new Error('Internal server error');    }        // Otherwise return the original error.  The error can also    // be manipulated in other ways, so long as it's returned.
-    return err;
   }
+  // formatError: (err) => {
+  // Don't give the specific errors to the client.    if (err.message.startsWith("Database Error: ")) {      return new Error('Internal server error');    }        // Otherwise return the original error.  The error can also    // be manipulated in other ways, so long as it's returned.
+  //   return err;
+  // },
 });
 
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });

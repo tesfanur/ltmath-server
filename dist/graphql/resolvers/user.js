@@ -148,7 +148,14 @@ var signup = function () {
             });
             res.set("Access-Control-Expose-Headers", "*");
             res.header("authorization", token);
-            return _context.abrupt("return", { token: token });
+            return _context.abrupt("return", {
+              token: token,
+              email: user.email,
+              username: user.username,
+              usertype: user.usertype,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt
+            });
 
           case 34:
             _context.prev = 34;
@@ -185,7 +192,7 @@ var signin = function () {
     var req = _ref6.req,
         res = _ref6.res;
 
-    var username, password, _validateSigninInput, errors, valid, extractedUser, passwordMatch, usertype, email, userpayload, token;
+    var username, password, _validateSigninInput, errors, valid, extractedUser, passwordMatch, usertype, email, createdAt, updatedAt, userpayload, token;
 
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
@@ -235,7 +242,7 @@ var signin = function () {
             throw new _apolloServer.UserInputError("Invalid username or password", { errors: errors });
 
           case 16:
-            usertype = extractedUser.usertype, email = extractedUser.email;
+            usertype = extractedUser.usertype, email = extractedUser.email, createdAt = extractedUser.createdAt, updatedAt = extractedUser.updatedAt;
             userpayload = {
               email: email,
               username: username,
@@ -250,7 +257,7 @@ var signin = function () {
             // res.set("Access-Control-Expose-Headers", "*");
             res.header("authorization", token);
 
-            return _context2.abrupt("return", { token: token });
+            return _context2.abrupt("return", { token: token, email: email, username: username, usertype: usertype, createdAt: createdAt, updatedAt: updatedAt });
 
           case 22:
           case "end":

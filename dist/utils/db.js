@@ -15,9 +15,10 @@ var _dotenv2 = _interopRequireDefault(_dotenv);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _dotenv2.default.config();
-var DB_URI_PROD = "mongodb://tesfanur:tesfanur#234@ds259577.mlab.com:59577/ltmath";
+var DB_URI_PROD = "mongodb://tesfa:Tesfanur#234@ds259577.mlab.com:59577/ltmath";
 
-var DB_CONNECTION = process.env.DB_CONNECTION || DB_URI_PROD;
+var DB_CONNECTION = process.env.DB_CONNECTION || process.env.DB_URI_PROD;
+// DB_CONNECTION = process.env.DB_CONNECTION; //`mongodb+srv://tesfanur:tesfanur@cluster0-q4gsj.mongodb.net/test?retryWrites=true&w=majority`;
 function connectToDB() {
   _mongoose2.default.Promise = global.Promise;
   _mongoose2.default.connect(DB_CONNECTION, {

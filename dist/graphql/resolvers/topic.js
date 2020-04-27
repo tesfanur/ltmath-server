@@ -13,6 +13,10 @@ var _TopicModel = require("../../models/TopicModel");
 
 var _TopicModel2 = _interopRequireDefault(_TopicModel);
 
+var _SubjectModel = require("../../models/SubjectModel");
+
+var _SubjectModel2 = _interopRequireDefault(_SubjectModel);
+
 var _topicTree = require("../../utils/topicTree");
 
 var _topicTree2 = _interopRequireDefault(_topicTree);
@@ -43,7 +47,7 @@ var addTopic = function () {
           case 0:
             isValidSubjectId = isValidObjectId(subjectId);
             _context.next = 3;
-            return SubjectModel.findById(subjectId);
+            return _SubjectModel2.default.findById(subjectId);
 
           case 3:
             ExistsInSubjColl = _context.sent;
