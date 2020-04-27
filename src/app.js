@@ -44,11 +44,11 @@ app.use(compression());
 //   credentials: true,
 // };
 //origin: `https://cors-anywhere.herokuapp.com` + process.env.FRONTEND_URL,
-const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
-const corsOpt = {
-  origin: process.env.FRONTEND_URL || FRONTEND_URL,
-  credentials: true, // <-- REQUIRED backend setting
-};
+// const FRONTEND_URL = "https://ltmathra.herokuapp.com/";
+// const corsOpt = {
+//   origin: process.env.FRONTEND_URL || FRONTEND_URL,
+//   credentials: true, // <-- REQUIRED backend setting
+// };
 // app.use(cors(corsOpt));
 app.use(cors({ origin: "*", credentials: true }));
 app.use(express.urlencoded({ extended: true }));
@@ -66,6 +66,7 @@ app.get("/", (req, res) => {
 //   next();
 // });
 // To support URL-encoded bodies
+console.log({ env: app.get("env") });
 app.use(bodyParser.urlencoded({ extended: true }));
 //TODO: DECIDE WHEN TO YOU USE COOKIE AND SESSION FOR YOUR APP,req
 // To parse cookies from the HTTP Request
@@ -86,15 +87,15 @@ app.disable("X-Powered-By");
 const apolloServer = new ApolloServer({
   // cors: {
   //   origin: "*", // <- allow request from all domains
-  //   credentials: true,
+  // credentials: true // <-- REQUIRED backend setting
   // }, // <- enable CORS response for requests with credentials (cookies, http authentication),
   typeDefs,
   resolvers,
   context: ({ req, res }) => ({ req, res }),
-  formatError: (err) => {
-    // Don't give the specific errors to the client.    if (err.message.startsWith("Database Error: ")) {      return new Error('Internal server error');    }        // Otherwise return the original error.  The error can also    // be manipulated in other ways, so long as it's returned.
-    return err;
-  },
+  // formatError: (err) => {
+  // Don't give the specific errors to the client.    if (err.message.startsWith("Database Error: ")) {      return new Error('Internal server error');    }        // Otherwise return the original error.  The error can also    // be manipulated in other ways, so long as it's returned.
+  //   return err;
+  // },
 });
 
 // apolloServer.applyMiddleware({ app, path: "/", cors: false });
