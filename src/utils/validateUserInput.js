@@ -18,12 +18,12 @@ export const validateSignupInput = (userRegistrationInput) => {
     console.log({ value, errorDetails: error.details });
     error.details.forEach(({ message, path }, i) => {
       if (message.indexOf("confirm") >= 0) {
-        message = "Password doesn't should match!";
+        message = "Password doesn't match!";
         error.details[i].message = message;
         console.log({ message, i });
       }
       //update custom errors object
-      if (path.length > 0) errors[path[0]] = message;
+      if (path.length > 0) errors[path[0]] = message.replace(/\"/g, "");
     });
     console.log({ errors, userRegistrationInput });
     //return here
@@ -45,7 +45,7 @@ export const validateSigninInput = (username, password) => {
     errors.username = "Username shouldn't be empty ";
   }
   if (password === "") {
-    errors.password = "You should enter a password shouldn't be empty ";
+    errors.password = "You should enter a password, it shouldn't be empty ";
   }
   return {
     errors,
