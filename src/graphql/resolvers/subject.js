@@ -60,9 +60,11 @@ const findSubjectByIdAndUpdate = async (
  * @param {*} _
  * @param {*} param1
  */
-const getSubjectById = async (_, { _id }) => {
-  if (!isValidObjectId(_id)) throw Error("Invalide Subject id");
-  const subject = await SubjectModel.findById(_id);
+const getSubjectById = async (_, { subjectId }) => {
+  console.log({ subjectId });
+  if (!isValidObjectId(subjectId)) throw Error("Invalide Subject id");
+  const subject = await SubjectModel.findById(subjectId);
+  if (!subject) throw Error("No subject found");
   return subject;
 };
 /**

@@ -20,7 +20,7 @@ const subjectTypedefs = gql`
     """
     finds subject by id
     """
-    getSubjectById(_id: ID!): Subject!
+    getSubjectById(subjectId: ID!): Subject!
     """
     finds all subject
     """
