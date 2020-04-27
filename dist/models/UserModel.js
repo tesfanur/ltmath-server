@@ -50,8 +50,7 @@ var UserSchema = new _mongoose.Schema({
     unique: true,
     lowercase: true,
     required: true,
-    minlength: 5,
-    maxlength: 50
+    minlength: 5
   },
   password: {
     type: String,
@@ -65,8 +64,8 @@ var UserSchema = new _mongoose.Schema({
  */
 UserSchema.statics.validate = function validateSchema(User) {
   var schema = _joi2.default.object().keys({
-    username: _joi2.default.string().alphanum().min(5).max(50).required(),
-    password: _joi2.default.string().regex(/^[a-zA-Z0-9]{5,200}$/),
+    username: _joi2.default.string().min(5).max(50).required(),
+    password: _joi2.default.string().min(5),
     email: _joi2.default.string().min(5).max(50).email({ minDomainAtoms: 2 })
   }).with("username", "email");
 
@@ -139,34 +138,27 @@ UserSchema.methods.checkPasswordValidity = function () {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.next = 2;
+            _context2.prev = 0;
+            _context2.next = 3;
             return (0, _bcryptjs.compare)(password, this.password);
 
-          case 2:
+          case 3:
             passwordMatches = _context2.sent;
-            _context2.prev = 3;
-
-            if (passwordMatches) {
-              _context2.next = 6;
-              break;
-            }
-
-            throw new _apolloServer.AuthenticationError("Invalid Password or Username");
-
-          case 6:
             return _context2.abrupt("return", passwordMatches);
 
-          case 9:
-            _context2.prev = 9;
-            _context2.t0 = _context2["catch"](3);
+          case 7:
+            _context2.prev = 7;
+            _context2.t0 = _context2["catch"](0);
+
+            console.log({ error: _context2.t0 });
             throw new _apolloServer.AuthenticationError("Something went wrong. Try again later please. error: " + _context2.t0);
 
-          case 12:
+          case 11:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, this, [[3, 9]]);
+    }, _callee2, this, [[0, 7]]);
   }));
 
   return function (_x2) {

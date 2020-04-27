@@ -60,8 +60,10 @@ var _UserModel2 = _interopRequireDefault(_UserModel);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-require("regenerator-runtime/path").path; //import 3rd party modules
+//import 3rd party modules
+require("make-promises-safe");
 
+require("regenerator-runtime/path").path;
 //import local modules
 //https://medium.com/@kimtnguyen/how-to-deploy-es6-node-js-express-back-end-to-heroku-7e6743e8d2ff
 //   "start": "nodemon ./app.js --exec babel-node -e js",
@@ -140,6 +142,10 @@ var apolloServer = new _apolloServerExpress.ApolloServer({
     var req = _ref.req,
         res = _ref.res;
     return { req: req, res: res };
+  },
+  formatError: function formatError(err) {
+    // Don't give the specific errors to the client.    if (err.message.startsWith("Database Error: ")) {      return new Error('Internal server error');    }        // Otherwise return the original error.  The error can also    // be manipulated in other ways, so long as it's returned.
+    return err;
   }
 });
 

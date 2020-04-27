@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.userResolvers = undefined;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _dotenv = require("dotenv");
 
 var _dotenv2 = _interopRequireDefault(_dotenv);
@@ -18,6 +16,8 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 var _jsonwebtoken = require("jsonwebtoken");
 
 var _apolloServer = require("apollo-server");
+
+var _validateUserInput = require("../../utils/validateUserInput");
 
 var _UserModel = require("../../models/UserModel");
 
@@ -41,26 +41,6 @@ var isValidObjectId = function isValidObjectId(_id) {
 var generateAuthToken = function generateAuthToken(payload, secret, expiresIn) {
   return "Bearer " + (0, _jsonwebtoken.sign)(payload, secret, { expiresIn: expiresIn });
 };
-var setTokens = function setTokens(user) {
-  // console.log({ userfromSetTokens: user });
-  var sevenDays = 60 * 60 * 24 * 7 * 1000;
-  var fifteenMins = 60 * 15 * 1000;
-  var accessUser = {
-    // id: user._id
-    username: user.username,
-    email: user.email
-  };
-  var accessToken = generateAuthToken(accessUser, SECRET_KEY, fifteenMins);
-
-  var refreshUser = {
-    username: user.username,
-    email: user.email,
-    count: user.tokenCount
-  };
-  var refreshToken = generateAuthToken(refreshUser, SECRET_KEY, sevenDays);
-
-  return { accessToken: accessToken, refreshToken: refreshToken };
-};
 
 /**
  *
@@ -74,70 +54,94 @@ var signup = function () {
     var req = _ref3.req,
         res = _ref3.res;
 
-    var username, email, password, usertype, _UserModel$validate, error, value, validationError, existingUserByEmail, existingUserByUsername, payload, token, userInput, user;
+    var username, email, password, confirmPassword, usertype, _validateSignupInput, errors, valid, existingUserByEmail, existingUserByUsername, user, payload, token;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             //destructure user input
-            username = input.username, email = input.email, password = input.password, usertype = input.usertype;
+            console.log({ signUpinput: input });
+            username = input.username, email = input.email, password = input.password, confirmPassword = input.confirmPassword, usertype = input.usertype;
 
-            console.log({
+            console.log("userSignupInput", {
               username: username,
               email: email,
+              password: password,
+              confirmPassword: confirmPassword,
               usertype: usertype
             });
-            //TODO: validate user input
-            _UserModel$validate = _UserModel2.default.validate({
+            //validate user input
+            _validateSignupInput = (0, _validateUserInput.validateSignupInput)({
+              username: username,
+              email: email,
+              password: password,
+              confirmPassword: confirmPassword
+            }), errors = _validateSignupInput.errors, valid = _validateSignupInput.valid;
+
+            console.log("from signup valid check result", { errors: errors, valid: valid });
+
+            if (valid) {
+              _context.next = 8;
+              break;
+            }
+
+            console.log({ testErrorForValidUserInput: errors });
+            throw new _apolloServer.UserInputError("Invalide user input", { errors: errors });
+
+          case 8:
+            _context.next = 10;
+            return _UserModel2.default.findOne({ email: email });
+
+          case 10:
+            existingUserByEmail = _context.sent;
+            _context.next = 13;
+            return _UserModel2.default.findOne({ username: username });
+
+          case 13:
+            existingUserByUsername = _context.sent;
+
+            if (!existingUserByEmail) {
+              _context.next = 18;
+              break;
+            }
+
+            errors.email = "This email already exists";
+            console.log({ errors: errors });
+            throw new _apolloServer.UserInputError("Email exists", {
+              errors: errors
+            });
+
+          case 18:
+            if (!existingUserByUsername) {
+              _context.next = 22;
+              break;
+            }
+
+            errors.username = "This username already exists";
+            console.log({ errors: errors });
+            throw new _apolloServer.UserInputError("Username exists", {
+              errors: errors
+            });
+
+          case 22:
+            _context.prev = 22;
+            _context.next = 25;
+            return new _UserModel2.default({
               username: username,
               email: email,
               password: password
-            }), error = _UserModel$validate.error, value = _UserModel$validate.value;
-            validationError = error;
-            // console.log({ error, value });
-            // console.log("error-object:=>", error.details[0].message);
-            //
+            }).save();
 
-            if (!validationError) {
-              _context.next = 6;
-              break;
-            }
-
-            throw new _apolloServer.UserInputError(error.details[0].message);
-
-          case 6:
-            _context.next = 8;
-            return _UserModel2.default.findOne({ email: email });
-
-          case 8:
-            existingUserByEmail = _context.sent;
-            _context.next = 11;
-            return _UserModel2.default.findOne({ username: username });
-
-          case 11:
-            existingUserByUsername = _context.sent;
-
-            if (!(!existingUserByEmail && !existingUserByUsername)) {
-              _context.next = 23;
-              break;
-            }
-
-            //use id for signing with jwt since username or email may be changed by a user
+          case 25:
+            user = _context.sent;
             payload = {
-              email: email,
-              username: username
+              email: user.email,
+              username: user.username,
+              usertype: user.usertype
             };
             token = generateAuthToken(payload, SECRET_KEY, "7d");
-            userInput = _extends({}, input);
-            _context.next = 18;
-            return new _UserModel2.default(userInput).save();
 
-          case 18:
-            user = _context.sent;
-
-            // req.header("authorization", token);
-            // req.headers.authorization = token;
             res.cookie("authorization", token, {
               httpOnly: true,
               secure: true
@@ -146,15 +150,19 @@ var signup = function () {
             res.header("authorization", token);
             return _context.abrupt("return", { token: token });
 
-          case 23:
-            throw new _apolloServer.UserInputError("User with " + username + " username already exists!");
+          case 34:
+            _context.prev = 34;
+            _context.t0 = _context["catch"](22);
 
-          case 24:
+            errors.general = "`Something went wrong`";
+            throw new _apolloServer.UserInputError("Unknown Problem", errors);
+
+          case 38:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, undefined);
+    }, _callee, undefined, [[22, 34]]);
   }));
 
   return function signup(_x, _x2, _x3) {
@@ -176,36 +184,57 @@ var signin = function () {
     var input = _ref5.input;
     var req = _ref6.req,
         res = _ref6.res;
-    var username, password, extractedUser, usertype, email, userpayload, token;
+
+    var username, password, _validateSigninInput, errors, valid, extractedUser, passwordMatch, usertype, email, userpayload, token;
+
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
+            // console.log({ signIninput: input });
             username = input.username, password = input.password;
-            // console.log({ headers: req.req.headers });
-            //TODO: validate user signin input
-            // const validationResult = UserModel.validate(input);
-            // console.log(validationResult);
+            _validateSigninInput = (0, _validateUserInput.validateSigninInput)(username, password), errors = _validateSigninInput.errors, valid = _validateSigninInput.valid;
 
-            _context2.next = 3;
-            return _UserModel2.default.findOne({
-              username: username
-            }).select("-password");
-
-          case 3:
-            extractedUser = _context2.sent;
-
-            if (extractedUser) {
-              _context2.next = 6;
+            if (valid) {
+              _context2.next = 4;
               break;
             }
 
-            throw new _apolloServer.UserInputError("Invalid username or password");
+            throw new _apolloServer.UserInputError("Invalid user input!", { errors: errors });
+
+          case 4:
+            _context2.next = 6;
+            return _UserModel2.default.findOne({
+              username: username
+            });
 
           case 6:
-            //compare password using user method
-            extractedUser.checkPasswordValidity(password);
+            extractedUser = _context2.sent;
 
+            if (extractedUser) {
+              _context2.next = 10;
+              break;
+            }
+
+            errors.userNotFound = "Invalid Credential";
+            throw new _apolloServer.UserInputError("Invalid username or password", { errors: errors });
+
+          case 10:
+            _context2.next = 12;
+            return extractedUser.checkPasswordValidity(password);
+
+          case 12:
+            passwordMatch = _context2.sent;
+
+            if (passwordMatch) {
+              _context2.next = 16;
+              break;
+            }
+
+            errors.invalidCredentials = "Invalid username or password";
+            throw new _apolloServer.UserInputError("Invalid username or password", { errors: errors });
+
+          case 16:
             usertype = extractedUser.usertype, email = extractedUser.email;
             userpayload = {
               email: email,
@@ -218,12 +247,12 @@ var signin = function () {
               httpOnly: true,
               secure: true
             });
-            res.set("Access-Control-Expose-Headers", "*");
+            // res.set("Access-Control-Expose-Headers", "*");
             res.header("authorization", token);
 
             return _context2.abrupt("return", { token: token });
 
-          case 14:
+          case 22:
           case "end":
             return _context2.stop();
         }
@@ -236,43 +265,43 @@ var signin = function () {
   };
 }();
 
-var getAllUsers = function () {
-  var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(_, args, _ref8, info) {
-    var req = _ref8.req,
-        res = _ref8.res;
-    var token, decoded, users;
+var deleteUserById = function () {
+  var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(_, _ref8, _ref9) {
+    var userId = _ref8.userId;
+    var req = _ref9.req,
+        res = _ref9.res;
+    var updatedUserDocument;
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            //TODO: handle user role management from ctx object
-            token = req.headers.authorization || req.cookies.authorization || "";
-
-            console.log({ token: token });
-            _context3.next = 4;
-            return _UserModel2.default.verifyAccessToken(token);
-
-          case 4:
-            decoded = _context3.sent;
-
-            console.log({ decoded: decoded });
-            _context3.next = 8;
-            return _UserModel2.default.find().exec();
-
-          case 8:
-            users = _context3.sent;
-
-            if (!(decoded.usertype === "ADMIN")) {
-              _context3.next = 13;
+            if (isValidObjectId(userId)) {
+              _context3.next = 2;
               break;
             }
 
-            return _context3.abrupt("return", users);
+            throw Error("Invalid User ID");
 
-          case 13:
-            throw new _apolloServer.AuthenticationError("You are not allowed to view lsit of users");
+          case 2:
+            _context3.next = 4;
+            return _UserModel2.default.findOneAndRemove({ _id: userId }, { useFindAndModify: false, new: true });
 
-          case 14:
+          case 4:
+            updatedUserDocument = _context3.sent;
+
+            console.log({ updatedUserDocument: updatedUserDocument });
+
+            if (updatedUserDocument) {
+              _context3.next = 8;
+              break;
+            }
+
+            throw Error("No user found to delete with user id " + userId);
+
+          case 8:
+            return _context3.abrupt("return", updatedUserDocument);
+
+          case 9:
           case "end":
             return _context3.stop();
         }
@@ -280,38 +309,65 @@ var getAllUsers = function () {
     }, _callee3, undefined);
   }));
 
-  return function getAllUsers(_x7, _x8, _x9, _x10) {
+  return function deleteUserById(_x7, _x8, _x9) {
     return _ref7.apply(this, arguments);
   };
 }();
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ * @param {*} param2
+ * @param {*} info
+ */
 
-var getUserByEmail = function () {
-  var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(_, _ref10) {
-    var email = _ref10.email;
-    var user;
+var getAllUsers = function () {
+  var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(_, args, _ref11, info) {
+    var req = _ref11.req,
+        res = _ref11.res;
+    var token, decoded, users;
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.next = 2;
-            return _UserModel2.default.findOne({ email: email }).select("-password");
+            //TODO: handle user role management from ctx object
+            token = req.headers.authorization || req.cookies.authorization || "";
 
-          case 2:
-            user = _context4.sent;
+            console.log({ token: token });
 
-            if (user) {
-              _context4.next = 5;
+            if (token) {
+              _context4.next = 4;
               break;
             }
 
-            throw new Error("No user found");
+            throw new _apolloServer.AuthenticationError("Authorization Failure");
 
-          case 5:
-            //TODO: handle if user not found
-            console.log({ user: user });
-            return _context4.abrupt("return", user);
+          case 4:
+            _context4.next = 6;
+            return _UserModel2.default.verifyAccessToken(token);
 
-          case 7:
+          case 6:
+            decoded = _context4.sent;
+
+            console.log({ decoded: decoded });
+
+            _context4.next = 10;
+            return _UserModel2.default.find().exec();
+
+          case 10:
+            users = _context4.sent;
+
+            if (!(decoded.usertype === "ADMIN")) {
+              _context4.next = 15;
+              break;
+            }
+
+            return _context4.abrupt("return", users);
+
+          case 15:
+            throw new _apolloServer.AuthenticationError("You are not allowed to view lsit of users");
+
+          case 16:
           case "end":
             return _context4.stop();
         }
@@ -319,20 +375,21 @@ var getUserByEmail = function () {
     }, _callee4, undefined);
   }));
 
-  return function getUserByEmail(_x11, _x12) {
-    return _ref9.apply(this, arguments);
+  return function getAllUsers(_x10, _x11, _x12, _x13) {
+    return _ref10.apply(this, arguments);
   };
 }();
-var getUserByUsername = function () {
-  var _ref11 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(_, _ref12) {
-    var username = _ref12.username;
+
+var getUserByEmail = function () {
+  var _ref12 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(_, _ref13) {
+    var email = _ref13.email;
     var user;
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
             _context5.next = 2;
-            return _UserModel2.default.findOne({ username: username }).select("-password");
+            return _UserModel2.default.findOne({ email: email }).select("-password");
 
           case 2:
             user = _context5.sent;
@@ -345,9 +402,11 @@ var getUserByUsername = function () {
             throw new Error("No user found");
 
           case 5:
+            //TODO: handle if user not found
+            console.log({ user: user });
             return _context5.abrupt("return", user);
 
-          case 6:
+          case 7:
           case "end":
             return _context5.stop();
         }
@@ -355,43 +414,35 @@ var getUserByUsername = function () {
     }, _callee5, undefined);
   }));
 
-  return function getUserByUsername(_x13, _x14) {
-    return _ref11.apply(this, arguments);
+  return function getUserByEmail(_x14, _x15) {
+    return _ref12.apply(this, arguments);
   };
 }();
-var getUserByID = function () {
-  var _ref13 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(_, _ref14) {
-    var _id = _ref14._id;
+var getUserByUsername = function () {
+  var _ref14 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(_, _ref15) {
+    var username = _ref15.username;
     var user;
     return regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
-            if (isValidObjectId(_id)) {
-              _context6.next = 2;
-              break;
-            }
-
-            throw new Error(_id + " is Invalid user id");
+            _context6.next = 2;
+            return _UserModel2.default.findOne({ username: username }).select("-password");
 
           case 2:
-            _context6.next = 4;
-            return _UserModel2.default.findOne({ _id: _id }).select("-password");
-
-          case 4:
             user = _context6.sent;
 
             if (user) {
-              _context6.next = 7;
+              _context6.next = 5;
               break;
             }
 
             throw new Error("No user found");
 
-          case 7:
+          case 5:
             return _context6.abrupt("return", user);
 
-          case 8:
+          case 6:
           case "end":
             return _context6.stop();
         }
@@ -399,15 +450,60 @@ var getUserByID = function () {
     }, _callee6, undefined);
   }));
 
-  return function getUserByID(_x15, _x16) {
-    return _ref13.apply(this, arguments);
+  return function getUserByUsername(_x16, _x17) {
+    return _ref14.apply(this, arguments);
+  };
+}();
+var getUserByID = function () {
+  var _ref16 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(_, _ref17) {
+    var userId = _ref17.userId;
+    var user;
+    return regeneratorRuntime.wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            if (isValidObjectId(userId)) {
+              _context7.next = 2;
+              break;
+            }
+
+            throw new Error(userId + " is Invalid user id");
+
+          case 2:
+            _context7.next = 4;
+            return _UserModel2.default.findOne({ _id: userId }).select("-password");
+
+          case 4:
+            user = _context7.sent;
+
+            if (user) {
+              _context7.next = 7;
+              break;
+            }
+
+            throw new Error("No user found");
+
+          case 7:
+            return _context7.abrupt("return", user);
+
+          case 8:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7, undefined);
+  }));
+
+  return function getUserByID(_x18, _x19) {
+    return _ref16.apply(this, arguments);
   };
 }();
 
 var userResolvers = {
   Mutation: {
     signup: signup,
-    signin: signin
+    signin: signin,
+    deleteUserById: deleteUserById
   },
   Query: {
     users: getAllUsers,

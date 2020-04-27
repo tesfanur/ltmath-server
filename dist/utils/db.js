@@ -34,4 +34,5 @@ function connectToDB() {
     console.log("DB connection error: " + err.message);
   });
 }
+
 exports.default = connectToDB;
