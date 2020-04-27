@@ -29,6 +29,7 @@ const generateAuthToken = (payload, secret, expiresIn) => {
 
 const signup = async (_, { input }, { req, res }) => {
   //destructure user input
+  console.log({ signUpinput: input });
   const { username, email, password, confirmPassword, usertype } = input;
   console.log("userSignupInput", {
     username,
@@ -104,12 +105,10 @@ const signup = async (_, { input }, { req, res }) => {
  */
 
 const signin = async (_, { input }, { req, res }) => {
+  // console.log({ signIninput: input });
   const { username, password } = input;
-  // console.log({ headers: req.req.headers });
-  //TODO: validate user signin input using joi module
   const { errors, valid } = validateSigninInput(username, password);
   if (!valid) throw new UserInputError("Invalid user input!", { errors });
-  // const validationResult = UserModel.validate(input);
   // console.log(validationResult);
   const extractedUser = await UserModel.findOne({
     username,
@@ -142,6 +141,26 @@ const signin = async (_, { input }, { req, res }) => {
 
   return { token };
 };
+
+const deleteUserById = async (_, { userId }, { req, res }) => {
+  if (!isValidObjectId(userId)) throw Error("Invalid User ID");
+  const updatedUserDocument = await UserModel.findOneAndRemove(
+    { _id: userId },
+    { useFindAndModify: false, new: true }
+  );
+  console.log({ updatedUserDocument });
+  if (!updatedUserDocument)
+    throw Error("No user found to delete with user id " + userId);
+  return updatedUserDocument;
+};
+/**
+ *
+ * @param {*} _
+ * @param {*} args
+ * @param {*} param2
+ * @param {*} info
+ */
+
 const getAllUsers = async (_, args, { req, res }, info) => {
   //TODO: handle user role management from ctx object
   const token = req.headers.authorization || req.cookies.authorization || "";
@@ -149,9 +168,9 @@ const getAllUsers = async (_, args, { req, res }, info) => {
   if (!token) throw new AuthenticationError("Authorization Failure");
   const decoded = await UserModel.verifyAccessToken(token);
   console.log({ decoded });
+
   const users = await UserModel.find().exec();
   // console.log({ users });
-
   if (decoded.usertype === "ADMIN") return users;
   else
     throw new AuthenticationError("You are not allowed to view lsit of users");
@@ -169,9 +188,9 @@ const getUserByUsername = async (_, { username }) => {
   if (!user) throw new Error("No user found");
   return user;
 };
-const getUserByID = async (_, { _id }) => {
-  if (!isValidObjectId(_id)) throw new Error(`${_id} is Invalid user id`);
-  const user = await UserModel.findOne({ _id }).select("-password");
+const getUserByID = async (_, { userId }) => {
+  if (!isValidObjectId(userId)) throw new Error(`${userId} is Invalid user id`);
+  const user = await UserModel.findOne({ _id: userId }).select("-password");
   if (!user) throw new Error("No user found");
   // console.log({ user });
   return user;
@@ -181,6 +200,7 @@ const userResolvers = {
   Mutation: {
     signup,
     signin,
+    deleteUserById,
   },
   Query: {
     users: getAllUsers,

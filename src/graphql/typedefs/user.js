@@ -24,6 +24,8 @@ const userTypedefs = gql`
     username: String!
     email: String!
     usertype: UserType
+    createdAt: String
+    updatedAt: String
   }
   """
   User registration input type
@@ -84,7 +86,7 @@ const userTypedefs = gql`
     """
     find user by user id
     """
-    getUserByID(_id: String): User!
+    getUserByID(userId: ID): User!
   }
   type Mutation {
     """
@@ -95,6 +97,10 @@ const userTypedefs = gql`
     signin user
     """
     signin(input: userSigninInput): Token
+    """
+    delete user
+    """
+    deleteUserById(userId: ID): User
   }
 `;
 
