@@ -23,6 +23,7 @@ const userTypedefs = gql`
     _id: String
     username: String!
     email: String!
+    token: String!
     usertype: UserType
     createdAt: String
     updatedAt: String
@@ -92,11 +93,11 @@ const userTypedefs = gql`
     """
     singnup by user
     """
-    signup(input: userRegistrationInput): Token
+    signup(input: userRegistrationInput): User
     """
     signin user
     """
-    signin(input: userSigninInput): Token
+    signin(input: userSigninInput): User
     """
     delete user
     """

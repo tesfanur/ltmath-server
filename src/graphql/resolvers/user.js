@@ -88,7 +88,14 @@ const signup = async (_, { input }, { req, res }) => {
     });
     res.set("Access-Control-Expose-Headers", "*");
     res.header("authorization", token);
-    return { token };
+    return {
+      token,
+      email: user.email,
+      username: user.username,
+      usertype: user.usertype,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   } catch (error) {
     errors.general = "`Something went wrong`";
     throw new UserInputError(`Unknown Problem`, errors);
@@ -125,7 +132,7 @@ const signin = async (_, { input }, { req, res }) => {
     errors.invalidCredentials = "Invalid username or password";
     throw new UserInputError("Invalid username or password", { errors });
   }
-  let { usertype, email } = extractedUser;
+  let { usertype, email, createdAt, updatedAt } = extractedUser;
   const userpayload = {
     email,
     username,
@@ -139,7 +146,7 @@ const signin = async (_, { input }, { req, res }) => {
   // res.set("Access-Control-Expose-Headers", "*");
   res.header("authorization", token);
 
-  return { token };
+  return { token, email, username, usertype, createdAt, updatedAt };
 };
 
 const deleteUserById = async (_, { userId }, { req, res }) => {
