@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
-// const DB_URI_PROD = `mongodb://tesfa:Tesfanur#234@ds259577.mlab.com:59577/ltmath`;
-
 let DB_CONNECTION = process.env.DB_URI_DEV || process.env.DB_URI_PROD;
 
 function connectToDB() {
