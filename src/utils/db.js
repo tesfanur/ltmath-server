@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
-const DB_URI_PROD = `mongodb://tesfa:Tesfanur#234@ds259577.mlab.com:59577/ltmath`;
+// const DB_URI_PROD = `mongodb://tesfa:Tesfanur#234@ds259577.mlab.com:59577/ltmath`;
 
-let DB_CONNECTION = process.env.DB_CONNECTION || process.env.DB_URI_PROD;
-// DB_CONNECTION = process.env.DB_CONNECTION; //`mongodb+srv://tesfanur:tesfanur@cluster0-q4gsj.mongodb.net/test?retryWrites=true&w=majority`;
+let DB_CONNECTION = process.env.DB_URI_DEV || process.env.DB_URI_PROD;
+
 function connectToDB() {
   mongoose.Promise = global.Promise;
   mongoose
